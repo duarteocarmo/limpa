@@ -1,0 +1,1 @@
+- when doing changes, run make format and make check to confirm all ok

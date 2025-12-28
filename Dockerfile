@@ -10,8 +10,8 @@ RUN uv sync --frozen --no-dev
 
 COPY . .
 
-RUN chmod +x entrypoint.sh
+RUN chmod +x entrypoint.sh && mkdir -p staticfiles
 
-EXPOSE 8000
+EXPOSE 4444
 
 ENTRYPOINT ["./entrypoint.sh"]
