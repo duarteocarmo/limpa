@@ -7,7 +7,7 @@ services:
       - sqlite_data:/app/db
     environment:
       - DEBUG=0
-      - ALLOWED_HOSTS=localhost,127.0.0.1
+      - ALLOWED_HOSTS=localhost,127.0.0.1,u4084wwksc8og0woo844s80w.136.243.151.98.sslip.io
 
 volumes:
   sqlite_data:
