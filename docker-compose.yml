@@ -1,0 +1,13 @@
+services:
+  web:
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - sqlite_data:/app/db
+    environment:
+      - DEBUG=0
+      - ALLOWED_HOSTS=localhost,127.0.0.1
+
+volumes:
+  sqlite_data:
