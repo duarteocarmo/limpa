@@ -2,7 +2,7 @@ services:
   web:
     build: .
     ports:
-      - "80:4444"
+      - "9999:4444"
     volumes:
       - sqlite_data:/app/db
     environment:
