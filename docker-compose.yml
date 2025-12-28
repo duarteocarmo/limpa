@@ -1,0 +1,15 @@
+services:
+  web:
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - sqlite_data:/app/data
+    environment:
+      - SECRET_KEY=${SECRET_KEY}
+      - DEBUG=false
+      - ALLOWED_HOSTS=${ALLOWED_HOSTS:-localhost}
+      - DATABASE_PATH=/app/data/db.sqlite3
+
+volumes:
+  sqlite_data:

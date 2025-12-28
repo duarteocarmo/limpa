@@ -1,0 +1,12 @@
+# Django configuration
+# Generate a new secret key: python -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())"
+export SECRET_KEY="your-secret-key-here"
+
+# Set to "false" in production
+export DEBUG="true"
+
+# Comma-separated list of allowed hosts (e.g., "example.com,www.example.com")
+export ALLOWED_HOSTS=""
+
+# Optional: Custom database path (defaults to db.sqlite3 in project root)
+# export DATABASE_PATH="/app/data/db.sqlite3"
