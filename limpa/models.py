@@ -16,6 +16,7 @@ class Podcast(models.Model):
     url = models.URLField(unique=True)
     url_hash = models.CharField(max_length=64)
     title = models.CharField(max_length=500)
+    episode_count = models.PositiveIntegerField(default=0)
     status = models.CharField(
         max_length=20, choices=Status.choices, default=Status.PENDING
     )

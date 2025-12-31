@@ -18,12 +18,11 @@ check: # Run linting and check
 	uv lock --check
 	uv run ruff check . 
 	uv run ruff format --check .
-	uv run ty check . 
+	uv run ty check .
 	uv run deptry .
 
 .PHONY: lint
 lint: check
-
 
 .PHONY: clean 
 clean: # Clean up temporary files
@@ -35,4 +34,9 @@ clean: # Clean up temporary files
 	@rm -rf **/__pycache__
 	@rm -rf build
 	@rm -rf dist
+
+.PHONY: run
+run: # Run migrations and start development server
+	uv run python manage.py migrate
+	uv run python manage.py runserver
 

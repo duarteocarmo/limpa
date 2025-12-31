@@ -39,6 +39,10 @@ button { cursor: pointer; }
 button:hover { border-color: #3b82f6; }
 button:disabled { opacity: 0.5; cursor: not-allowed; }
 
+.htmx-indicator { display: none; }
+.htmx-request .btn-text { display: none; }
+.htmx-request .htmx-indicator { display: inline; }
+
 a { color: #3b82f6; }
 a:hover { color: #60a5fa; }
 
@@ -55,6 +59,7 @@ hr { border: none; border-top: 1px solid light-dark(#e2e8f0, #1e293b); }
     border-radius: 4px;
     background: light-dark(#f8fafc, #0f172a);
 }
+.podcast-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
 .podcast-title { font-weight: 600; }
 .podcast-meta {
     margin-top: 4px;
@@ -64,6 +69,16 @@ hr { border: none; border-top: 1px solid light-dark(#e2e8f0, #1e293b); }
     gap: 8px;
     align-items: center;
 }
+
+.btn-delete {
+    padding: 0 6px;
+    font-size: 12px;
+    line-height: 1.4;
+    background: transparent;
+    border: 1px solid light-dark(#e2e8f0, #1e293b);
+    color: #64748b;
+}
+.btn-delete:hover { border-color: #ef4444; color: #ef4444; }
 
 .status {
     padding: 2px 6px;

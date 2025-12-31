@@ -2,8 +2,8 @@ import logging
 
 from django.db import IntegrityError
 from django.http import HttpResponse
-from django.shortcuts import render
-from django.views.decorators.http import require_POST
+from django.shortcuts import get_object_or_404, render
+from django.views.decorators.http import require_http_methods, require_POST
 
 from limpa.models import Podcast
 from limpa.services.feed import FeedError, fetch_and_validate_feed
@@ -17,7 +17,7 @@ def home(request):
     return render(request, "limpa/home.html", {"podcasts": podcasts})
 
 
-@require_POST
+@require_POST  # ty: ignore[invalid-argument-type]
 def add_podcast(request):
     url = request.POST.get("url", "").strip()
 
@@ -33,7 +33,9 @@ def add_podcast(request):
         return HttpResponse(f'<div class="error">{e}</div>', status=400)
 
     try:
-        podcast = Podcast.objects.create(url=url, title=feed_data.title)
+        podcast = Podcast.objects.create(
+            url=url, title=feed_data.title, episode_count=feed_data.episode_count
+        )
     except IntegrityError:
         return HttpResponse(
             '<div class="error">This podcast has already been added</div>', status=400
@@ -50,3 +52,11 @@ def add_podcast(request):
         logger.error("S3 upload failed for podcast %s: %s", podcast.title, e)
 
     return render(request, "limpa/_podcast_item.html", {"podcast": podcast})
+
+
+@require_http_methods(["DELETE"])
+def delete_podcast(request, podcast_id: int):
+    podcast = get_object_or_404(Podcast, id=podcast_id)
+    podcast.delete()
+    logger.info("Deleted podcast %s", podcast.title)
+    return HttpResponse("")

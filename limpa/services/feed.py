@@ -12,6 +12,7 @@ class FeedError(Exception):
 class FeedData:
     title: str
     raw_xml: bytes
+    episode_count: int
 
 
 def fetch_and_validate_feed(url: str) -> FeedData:
@@ -33,4 +34,4 @@ def fetch_and_validate_feed(url: str) -> FeedData:
     if not parsed.entries:
         raise FeedError("Feed has no episodes")
 
-    return FeedData(title=title, raw_xml=raw_xml)
+    return FeedData(title=title, raw_xml=raw_xml, episode_count=len(parsed.entries))

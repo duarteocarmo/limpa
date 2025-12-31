@@ -22,6 +22,9 @@ from limpa import views
 
 urlpatterns = [
     path("", views.home, name="home"),
-    path("podcasts/add/", views.add_podcast, name="add_podcast"),
+    path("podcasts/add/", views.add_podcast, name="add_podcast"),  # ty: ignore[no-matching-overload]
+    path(
+        "podcasts/<int:podcast_id>/delete/", views.delete_podcast, name="delete_podcast"
+    ),  # ty: ignore[no-matching-overload]  # noqa: E501
     path("admin/", admin.site.urls),
 ]

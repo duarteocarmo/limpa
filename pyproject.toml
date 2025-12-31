@@ -4,10 +4,22 @@ version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.14"
-dependencies = ["django>=6.0", "gunicorn>=23.0.0", "modal>=1.0.0", "whitenoise>=6.11.0", "feedparser>=6.0.0", "boto3>=1.35.0"]
+dependencies = [
+  "django>=6.0",
+  "gunicorn>=23.0.0",
+  "modal>=1.0.0",
+  "whitenoise>=6.11.0",
+  "feedparser>=6.0.0",
+  "boto3>=1.35.0",
+]
 
 [dependency-groups]
-dev = ["deptry>=0.24.0", "ruff>=0.14.10", "ty>=0.0.7"]
+dev = [
+  "deptry>=0.24.0",
+  "django-stubs[compatible-mypy]>=5.2.8",
+  "ruff>=0.14.10",
+  "ty>=0.0.7",
+]
 
 [tool.deptry.per_rule_ignores]
 DEP001 = ["nemo", "torch", "pydub"]
@@ -18,6 +30,7 @@ extend-exclude = ["scripts"]
 
 [tool.deptry]
 extend_exclude = ["scripts"]
+
 
 [tool.ty.src]
 exclude = ["scripts"]

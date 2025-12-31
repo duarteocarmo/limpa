@@ -1,47 +1,52 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="Remove ads from your podcast">
-    <title>Limpa</title>
-    <link rel="stylesheet" href="{% static 'limpa/reset.css' %}">
-    <link rel="stylesheet" href="{% static 'limpa/style.css' %}">
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧼</text></svg>">
-    <script src="https://unpkg.com/htmx.org@2.0.4"></script>
-</head>
-<body>
-    <div class="container">
-        <header>
-            <a href="/" class="logo">🧼 Limpa</a>
-            <div class="tagline">Remove ads from your podcast.</div>
-        </header>
-
-        <form class="form-row"
-              hx-post="{% url 'add_podcast' %}"
-              hx-target="#podcast-list"
-              hx-swap="afterbegin"
-              hx-on::after-request="if(event.detail.successful) this.reset()">
-            {% csrf_token %}
-            <input type="url" name="url" placeholder="Podcast feed URL..." required autofocus>
-            <button type="submit">Add feed</button>
-        </form>
-
-        <p class="meta">
-            <a href="https://duarteocarmo.com">By Duarte O.Carmo</a> |
-            <a href="https://github.com/duarteocarmo/limpa">Source</a> 
-        </p>
-
-        <hr>
-
-        <div id="podcast-list" class="podcast-list">
-            {% for podcast in podcasts %}
-                {% include "limpa/_podcast_item.html" with podcast=podcast %}
-            {% empty %}
-                <div class="empty-state">No podcasts added yet. Add one above!</div>
-            {% endfor %}
-        </div>
-    </div>
-</body>
-</html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="Remove ads from your podcast">
+        <title>Limpa</title>
+        <link rel="stylesheet" href="{% static 'limpa/reset.css' %}">
+        <link rel="stylesheet" href="{% static 'limpa/style.css' %}">
+        <link rel="icon"
+              href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧼</text></svg>">
+            <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+        </head>
+        <body hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+            <div class="container">
+                <header>
+                    <a href="/" class="logo">🧼 Limpa</a>
+                    <div class="tagline">Remove ads from your podcast.</div>
+                </header>
+                <form class="form-row"
+                      hx-post="{% url 'add_podcast' %}"
+                      hx-target="#podcast-list"
+                      hx-swap="afterbegin"
+                      hx-indicator="#add-indicator"
+                      hx-on::after-request="if(event.detail.successful) { this.reset(); } else { alert(event.detail.xhr.responseText.replace(/<[^>]*>/g, '')); }">
+                    {% csrf_token %}
+                    <input type="url"
+                           name="url"
+                           placeholder="Podcast feed URL..."
+                           required
+                           autofocus>
+                    <button type="submit">
+                        <span class="btn-text">Add feed</span>
+                        <span id="add-indicator" class="htmx-indicator">Processing...</span>
+                    </button>
+                </form>
+                <p class="meta">
+                    <a href="https://duarteocarmo.com">By Duarte O.Carmo</a> |
+                    <a href="https://github.com/duarteocarmo/limpa">Source</a>
+                </p>
+                <hr>
+                <div id="podcast-list" class="podcast-list">
+                    {% for podcast in podcasts %}
+                        {% include "limpa/_podcast_item.html" with podcast=podcast %}
+                    {% empty %}
+                        <div class="empty-state">No podcasts added yet. Add one above!</div>
+                    {% endfor %}
+                </div>
+            </div>
+        </body>
+    </html>
