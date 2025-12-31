@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="Convert email newsletters into Atom feeds">
-    <title>Kill the Newsletter!</title>
+    <title>Limpa</title>
     <link rel="stylesheet" href="{% static 'limpa/reset.css' %}">
     <style>
         :root { color-scheme: light dark; }
@@ -54,23 +54,19 @@
 <body>
     <div class="container">
         <header>
-            <a href="/" class="logo">&#x2709; &rarr; &#x1F4E1; Kill the Newsletter!</a>
-            <div class="tagline">Convert email newsletters into Atom feeds</div>
+            <a href="/" class="logo">Limpa</a>
+            <div class="tagline">Remove ads from your podcast.</div>
         </header>
 
         <form class="form-row" method="post" action="/">
             {% csrf_token %}
-            <input type="text" name="title" placeholder="Feed title..." required autofocus>
-            <button type="submit">Create feed</button>
+            <input type="text" name="title" placeholder="Podcast feed url..." required autofocus>
+            <button type="submit">Add feed</button>
         </form>
 
         <p class="meta">
-            <a href="https://leafac.com">By Leandro Facchinetti</a> |
-            <a href="https://github.com/leafac/kill-the-newsletter">Source</a> |
-            <a href="mailto:kill-the-newsletter@leafac.com">Report Issue</a> |
-            <a href="https://patreon.com/leafac">Patreon</a> ·
-            <a href="https://paypal.me/LeandroFacchinettiEU">PayPal</a> ·
-            <a href="https://github.com/sponsors/leafac">GitHub Sponsors</a>
+            <a href="https://duarteocarmo.com">By Duarte O.Carmo</a> |
+            <a href="https://github.com/leafac/kill-the-newsletter">Source</a> 
         </p>
 
         <hr>

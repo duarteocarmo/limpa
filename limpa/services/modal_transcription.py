@@ -1,19 +1,7 @@
-# /// script
-# requires-python = ">=3.10"
-# dependencies = [
-#     "modal",
-# ]
-# ///
 """
 Transcribe audio files using NVIDIA Parakeet on Modal.
-
-Usage:
-    uv run transcribe_modal.py audio.wav
-    uv run transcribe_modal.py audio.mp3
 """
 
-import sys
-from pathlib import Path
 import modal
 
 MODAL_APP_NAME = "transcriber"
@@ -64,8 +52,9 @@ class Transcriber:
     @modal.enter()
     def setup(self):
         import logging
-        import nemo.collections.asr as nemo_asr
-        import torch
+
+        import nemo.collections.asr as nemo_asr  # ty: ignore # type: ignore
+        import torch  # ty: ignore # type: ignore
 
         logging.getLogger("nemo_logger").setLevel(logging.CRITICAL)
 
@@ -84,8 +73,9 @@ class Transcriber:
     @modal.method()
     def transcribe(self, audio_bytes: bytes, filename: str) -> dict:
         from pathlib import Path
-        import torch
-        from pydub import AudioSegment
+
+        import torch  # ty: ignore # type: ignore
+        from pydub import AudioSegment  # ty: ignore # type: ignore
 
         input_path = Path(f"/tmp/{filename}")
         input_path.write_bytes(audio_bytes)
@@ -107,32 +97,3 @@ class Transcriber:
             "text": result.text,
             "segments": result.timestamp.get("segment", []),
         }
-
-
-def transcribe_file(audio_path: Path) -> dict[str, any]:
-
-    audio_path = Path(sys.argv[1])
-    if not audio_path.exists():
-        print(f"Error: File not found: {audio_path}")
-        sys.exit(1)
-
-    if audio_path.suffix.lower() not in (".wav", ".mp3", ".flac"):
-        print("Error: Only .wav, .mp3, and .flac files are supported")
-        sys.exit(1)
-
-    print(f"Transcribing: {audio_path}")
-    audio_bytes = audio_path.read_bytes()
-
-    with modal.enable_output():
-        with app.run():
-            transcriber = Transcriber()
-            result = transcriber.transcribe.remote(audio_bytes, audio_path.name)
-
-    # print("\n--- Transcription ---")
-    # print(result["text"])
-
-    print("\n--- Segments ---")
-    for seg in result["segments"]:
-        print(f"[{seg['start']:.2f}s - {seg['end']:.2f}s] {seg['segment']}")
-
-
