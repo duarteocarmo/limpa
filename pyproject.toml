@@ -4,18 +4,19 @@ version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.14"
-dependencies = [
-    "django>=6.0",
-    "gunicorn>=23.0.0",
-    "whitenoise>=6.11.0",
-]
+dependencies = ["django>=6.0", "gunicorn>=23.0.0", "whitenoise>=6.11.0"]
 
 [dependency-groups]
-dev = [
-    "deptry>=0.24.0",
-    "ruff>=0.14.10",
-    "ty>=0.0.7",
-]
+dev = ["deptry>=0.24.0", "ruff>=0.14.10", "ty>=0.0.7"]
 
 [tool.deptry.per_rule_ignores]
 DEP002 = ["gunicorn", "whitenoise"]
+
+[tool.ruff]
+extend-exclude = ["scripts"]
+
+[tool.deptry]
+extend_exclude = ["scripts", "a_python_file\\.py", "a_pattern/.*"]
+
+[tool.ty.src]
+exclude = ["scripts"]

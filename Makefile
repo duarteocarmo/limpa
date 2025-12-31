@@ -18,8 +18,8 @@ check: # Run linting and check
 	uv lock --check
 	uv run ruff check . 
 	uv run ruff format --check .
-	uv run deptry .
 	uv run ty check . 
+	uv run deptry .
 
 .PHONY: lint
 lint: check
