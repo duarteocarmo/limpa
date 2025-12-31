@@ -22,5 +22,6 @@ from limpa import views
 
 urlpatterns = [
     path("", views.home, name="home"),
+    path("podcasts/add/", views.add_podcast, name="add_podcast"),
     path("admin/", admin.site.urls),
 ]

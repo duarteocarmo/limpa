@@ -4,111 +4,43 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="Convert email newsletters into Atom feeds">
+    <meta name="description" content="Remove ads from your podcast">
     <title>Limpa</title>
     <link rel="stylesheet" href="{% static 'limpa/reset.css' %}">
-    <style>
-        :root { color-scheme: light dark; }
-        body {
-            font-family: system-ui, sans-serif;
-            font-size: 14px;
-            line-height: 1.5;
-            color: light-dark(#000, #fff);
-            background: light-dark(#fff, #000);
-            padding: 16px;
-        }
-        .container { max-width: 576px; margin: 0 auto; }
-        .container > * + * { margin-top: 16px; }
-        .logo {
-            font-size: 18px;
-            font-weight: 700;
-            text-decoration: none;
-            color: inherit;
-        }
-        .logo:hover { color: #3b82f6; }
-        .tagline { font-size: 12px; font-weight: 700; color: #64748b; }
-        .form-row { display: flex; gap: 8px; }
-        @media (max-width: 400px) { .form-row { flex-direction: column; } }
-        input, button {
-            font: inherit;
-            padding: 4px 8px;
-            border: 1px solid light-dark(#94a3b8, #475569);
-            border-radius: 4px;
-            background: light-dark(#f8fafc, #0f172a);
-            color: inherit;
-        }
-        input { flex: 1; }
-        input:focus { outline: none; border-color: #3b82f6; }
-        button { cursor: pointer; }
-        button:hover { border-color: #3b82f6; }
-        a { color: #3b82f6; }
-        a:hover { color: #60a5fa; }
-        .meta { font-size: 12px; font-weight: 700; color: #64748b; }
-        .meta a { color: inherit; }
-        .meta a:hover { color: #3b82f6; }
-        hr { border: none; border-top: 1px solid light-dark(#e2e8f0, #1e293b); }
-        h2 { font-weight: 700; }
-        p { margin-block: 1em; }
-    </style>
+    <link rel="stylesheet" href="{% static 'limpa/style.css' %}">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧼</text></svg>">
+    <script src="https://unpkg.com/htmx.org@2.0.4"></script>
 </head>
 <body>
     <div class="container">
         <header>
-            <a href="/" class="logo">Limpa</a>
+            <a href="/" class="logo">🧼 Limpa</a>
             <div class="tagline">Remove ads from your podcast.</div>
         </header>
 
-        <form class="form-row" method="post" action="/">
+        <form class="form-row"
+              hx-post="{% url 'add_podcast' %}"
+              hx-target="#podcast-list"
+              hx-swap="afterbegin"
+              hx-on::after-request="if(event.detail.successful) this.reset()">
             {% csrf_token %}
-            <input type="text" name="title" placeholder="Podcast feed url..." required autofocus>
+            <input type="url" name="url" placeholder="Podcast feed URL..." required autofocus>
             <button type="submit">Add feed</button>
         </form>
 
         <p class="meta">
             <a href="https://duarteocarmo.com">By Duarte O.Carmo</a> |
-            <a href="https://github.com/leafac/kill-the-newsletter">Source</a> 
+            <a href="https://github.com/duarteocarmo/limpa">Source</a> 
         </p>
 
         <hr>
 
-        <div>
-            <h2>How does Kill the Newsletter! work?</h2>
-            <p>Create a feed with the form above and Kill the Newsletter! provides you with an email address and an Atom feed. Emails that are received at that address are turned into entries in that feed. Sign up to a newsletter with that address and use your feed reader to subscribe to that feed.</p>
-        </div>
-
-        <div>
-            <h2>How do I confirm my newsletter subscription?</h2>
-            <p>In most cases when you subscribe to a newsletter the newsletter publisher sends you an email with a confirmation link. Kill the Newsletter! converts that email into a feed entry as usual, so it appears in your feed reader and you may follow the confirmation link from there. Some newsletter publishers want you to reply to an email using the address that subscribed to the newsletter. Unfortunately Kill the Newsletter! doesn't support this scenario, but you may contact the newsletter publisher and ask them to verify you manually. As a workaround, some people have had success with signing up for the newsletter using their regular email address and setting up a filter to forward the emails to Kill the Newsletter!</p>
-        </div>
-
-        <div>
-            <h2>Why can't I subscribe to a newsletter with my Kill the Newsletter! email?</h2>
-            <p>Some newsletter publishers block Kill the Newsletter!. You may contact them to explain why using Kill the Newsletter! is important to you and ask them to reconsider their decision, but ultimately it's their content and their choice of who has access to it and by what means. As a workaround, some people have had success with signing up for the newsletter using their regular email address and setting up a filter to forward the emails to Kill the Newsletter!</p>
-        </div>
-
-        <div>
-            <h2>How do I share a Kill the Newsletter! feed?</h2>
-            <p>You don't. The feed includes the identifier for the email address and anyone who has access to it may unsubscribe you from your newsletters, send you spam, and so forth. Instead of sharing a feed, you may share Kill the Newsletter! itself and let people create their own Kill the Newsletter! feeds. Kill the Newsletter! has been designed this way because it plays better with newsletter publishers, who may, for example, get statistics on the number of subscribers who use Kill the Newsletter!. Note that Kill the Newsletter! itself doesn't track users in any way.</p>
-        </div>
-
-        <div>
-            <h2>Why are old entries disappearing?</h2>
-            <p>When Kill the Newsletter! receives an email it may delete old entries to keep the feed under a size limit, because some feed readers don't support feeds that are too big.</p>
-        </div>
-
-        <div>
-            <h2>Why isn't my feed updating?</h2>
-            <p>Send an email to the address that corresponds to your Kill the Newsletter! feed and wait a few minutes. If the email shows up on your feed reader, then the issue must be with the newsletter publisher and you should contact them. Otherwise, please <a href="mailto:kill-the-newsletter@leafac.com">report the issue to us</a>.</p>
-        </div>
-
-        <div>
-            <h2>How do I delete my Kill the Newsletter! feed?</h2>
-            <p>At the end of each feed entry there's a link to manage the Kill the Newsletter! feed settings, including deleting it.</p>
-        </div>
-
-        <div>
-            <h2>I'm a newsletter publisher and I saw some people subscribing with Kill the Newsletter!. What is this?</h2>
-            <p>Think of Kill the Newsletter! as an email provider like Gmail, but the emails get delivered through Atom feeds for people who prefer to read with feed readers instead of email. Also, consider providing your content through an Atom feed—your readers will appreciate it.</p>
+        <div id="podcast-list" class="podcast-list">
+            {% for podcast in podcasts %}
+                {% include "limpa/_podcast_item.html" with podcast=podcast %}
+            {% empty %}
+                <div class="empty-state">No podcasts added yet. Add one above!</div>
+            {% endfor %}
         </div>
     </div>
 </body>

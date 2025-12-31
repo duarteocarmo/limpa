@@ -1,0 +1,7 @@
+<div class="podcast-item">
+    <div class="podcast-title">{{ podcast.title }}</div>
+    <div class="podcast-meta">
+        <span class="status status-{{ podcast.status }}">{{ podcast.status }}</span>
+        <span class="timestamp">{{ podcast.created_at|date:"M j, Y H:i" }}</span>
+    </div>
+</div>
