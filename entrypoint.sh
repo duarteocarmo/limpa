@@ -16,4 +16,4 @@ if [ -n "${DJANGO_SUPERUSER_USERNAME:-}" ] && [ -n "${DJANGO_SUPERUSER_PASSWORD:
 fi
 
 echo "Start gunicorn..."
-exec uv run --no-sync gunicorn config.wsgi:application --bind 0.0.0.0:4444
+exec uv run --no-sync gunicorn config.wsgi:application --bind 0.0.0.0:4444 --access-logfile -
