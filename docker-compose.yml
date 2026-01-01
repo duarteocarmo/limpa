@@ -23,7 +23,7 @@ services:
 
   worker:
     build: .
-    entrypoint: []
+    entrypoint: ""
     command: uv run --no-sync python manage.py db_worker
     volumes:
       - sqlite_data:/app/db
