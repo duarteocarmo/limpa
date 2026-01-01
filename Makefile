@@ -44,3 +44,7 @@ run: # Run migrations, start server and worker
 worker: # Run the background task worker
 	uv run python manage.py db_worker
 
+.PHONY: docker
+docker: # Run docker compose with .envrc
+	docker compose --env-file .envrc up --build --force-recreate
+

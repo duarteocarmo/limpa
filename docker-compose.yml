@@ -1,12 +1,3 @@
-x-common-env: &common-env
-  DEBUG: 0
-  MODAL_TOKEN_ID: ${MODAL_TOKEN_ID}
-  MODAL_TOKEN_SECRET: ${MODAL_TOKEN_SECRET}
-  AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
-  AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
-  AWS_S3_REGION: ${AWS_S3_REGION:-us-east-1}
-  AWS_S3_BUCKET_NAME: ${AWS_S3_BUCKET_NAME}
-
 services:
   web:
     build: .
@@ -14,19 +5,39 @@ services:
       - "9999:4444"
     volumes:
       - sqlite_data:/app/db
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:4444/')"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 30s
     environment:
-      <<: *common-env
-      ALLOWED_HOSTS: localhost,127.0.0.1,u4084wwksc8og0woo844s80w.136.243.151.98.sslip.io
+      - DEBUG=0
+      - ALLOWED_HOSTS=localhost,127.0.0.1,u4084wwksc8og0woo844s80w.136.243.151.98.sslip.io
+      - MODAL_TOKEN_ID=${MODAL_TOKEN_ID}
+      - MODAL_TOKEN_SECRET=${MODAL_TOKEN_SECRET}
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AWS_S3_REGION=${AWS_S3_REGION:-us-east-1}
+      - AWS_S3_BUCKET_NAME=${AWS_S3_BUCKET_NAME}
 
   worker:
     build: .
-    command: python manage.py db_worker
+    entrypoint: []
+    command: uv run --no-sync python manage.py db_worker
     volumes:
       - sqlite_data:/app/db
     environment:
-      <<: *common-env
+      - DEBUG=0
+      - MODAL_TOKEN_ID=${MODAL_TOKEN_ID}
+      - MODAL_TOKEN_SECRET=${MODAL_TOKEN_SECRET}
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AWS_S3_REGION=${AWS_S3_REGION:-us-east-1}
+      - AWS_S3_BUCKET_NAME=${AWS_S3_BUCKET_NAME}
     depends_on:
-      - web
+      web:
+        condition: service_healthy
 
 volumes:
   sqlite_data:
