@@ -13,7 +13,7 @@ services:
       start_period: 30s
     environment:
       - DEBUG=0
-      - ALLOWED_HOSTS=localhost,127.0.0.1,u4084wwksc8og0woo844s80w.136.243.151.98.sslip.io
+      - ALLOWED_HOSTS=localhost,127.0.0.1,u4084wwksc8og0woo844s80w.136.243.151.98.sslip.io,limpa.duarteocarmo.com
       - MODAL_TOKEN_ID=${MODAL_TOKEN_ID}
       - MODAL_TOKEN_SECRET=${MODAL_TOKEN_SECRET}
       - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
