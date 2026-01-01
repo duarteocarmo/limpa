@@ -22,23 +22,34 @@ def add_podcast(request):
     url = request.POST.get("url", "").strip()
 
     if not url:
-        return HttpResponse(
-            '<div class="error">Please enter a podcast feed URL</div>', status=400
+        return render(
+            request,
+            "limpa/home.html#error_message",
+            {"message": "Please enter a podcast feed URL"},
+            status=400,
         )
 
     try:
         feed_data = fetch_and_validate_feed(url)
     except FeedError as e:
         logger.warning("Feed validation failed for %s: %s", url, e)
-        return HttpResponse(f'<div class="error">{e}</div>', status=400)
+        return render(
+            request,
+            "limpa/home.html#error_message",
+            {"message": str(e)},
+            status=400,
+        )
 
     try:
         podcast = Podcast.objects.create(
             url=url, title=feed_data.title, episode_count=feed_data.episode_count
         )
     except IntegrityError:
-        return HttpResponse(
-            '<div class="error">This podcast has already been added</div>', status=400
+        return render(
+            request,
+            "limpa/home.html#error_message",
+            {"message": "This podcast has already been added"},
+            status=400,
         )
 
     try:
@@ -51,7 +62,7 @@ def add_podcast(request):
         podcast.save()
         logger.error("S3 upload failed for podcast %s: %s", podcast.title, e)
 
-    return render(request, "limpa/_podcast_item.html", {"podcast": podcast})
+    return render(request, "limpa/home.html#podcast_item", {"podcast": podcast})
 
 
 @require_http_methods(["DELETE"])
