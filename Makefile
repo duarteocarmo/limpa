@@ -35,16 +35,19 @@ clean: # Clean up temporary files
 	@rm -rf build
 	@rm -rf dist
 
+WEBSERVER_PORT := 8000
+
 .PHONY: run
 run: # Run migrations, start server and worker
+	-lsof -ti:$(WEBSERVER_PORT) | xargs kill -9 2>/dev/null || true
 	uv run python manage.py migrate
-	uv run python manage.py runserver & uv run python manage.py db_worker & wait
+	uv run python manage.py runserver $(WEBSERVER_PORT) & uv run python manage.py db_worker & wait
 
 .PHONY: worker
 worker: # Run the background task worker
 	uv run python manage.py db_worker
 
 .PHONY: docker
-docker: # Run docker compose with .envrc
-	docker compose --env-file .envrc up --build --force-recreate
+docker: # Run docker compose with env vars
+	docker compose --env-file .env up --build --force-recreate
 
