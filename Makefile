@@ -36,7 +36,11 @@ clean: # Clean up temporary files
 	@rm -rf dist
 
 .PHONY: run
-run: # Run migrations and start development server
+run: # Run migrations, start server and worker
 	uv run python manage.py migrate
-	uv run python manage.py runserver
+	uv run python manage.py runserver & uv run python manage.py db_worker & wait
+
+.PHONY: worker
+worker: # Run the background task worker
+	uv run python manage.py db_worker
 

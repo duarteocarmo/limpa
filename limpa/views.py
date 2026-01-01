@@ -8,8 +8,15 @@ from django.views.decorators.http import require_http_methods, require_POST
 from limpa.models import Podcast
 from limpa.services.feed import FeedError, fetch_and_validate_feed
 from limpa.services.s3 import upload_feed_xml
+from limpa.tasks import process_podcast
 
 logger = logging.getLogger(__name__)
+
+
+def _error_response(request, message: str):
+    return render(
+        request, "limpa/home.html#error_message", {"message": message}, status=400
+    )
 
 
 def home(request):
@@ -22,35 +29,20 @@ def add_podcast(request):
     url = request.POST.get("url", "").strip()
 
     if not url:
-        return render(
-            request,
-            "limpa/home.html#error_message",
-            {"message": "Please enter a podcast feed URL"},
-            status=400,
-        )
+        return _error_response(request, "Please enter a podcast feed URL")
 
     try:
         feed_data = fetch_and_validate_feed(url)
     except FeedError as e:
         logger.warning("Feed validation failed for %s: %s", url, e)
-        return render(
-            request,
-            "limpa/home.html#error_message",
-            {"message": str(e)},
-            status=400,
-        )
+        return _error_response(request, str(e))
 
     try:
         podcast = Podcast.objects.create(
             url=url, title=feed_data.title, episode_count=feed_data.episode_count
         )
     except IntegrityError:
-        return render(
-            request,
-            "limpa/home.html#error_message",
-            {"message": "This podcast has already been added"},
-            status=400,
-        )
+        return _error_response(request, "This podcast has already been added")
 
     try:
         upload_feed_xml(url_hash=podcast.url_hash, xml_content=feed_data.raw_xml)
@@ -61,6 +53,8 @@ def add_podcast(request):
         podcast.status = Podcast.Status.FAILED
         podcast.save()
         logger.error("S3 upload failed for podcast %s: %s", podcast.title, e)
+
+    process_podcast.enqueue(podcast_id=podcast.id)
 
     return render(request, "limpa/home.html#podcast_item", {"podcast": podcast})
 

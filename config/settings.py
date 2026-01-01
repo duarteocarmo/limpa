@@ -37,6 +37,8 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "django_tasks",
+    "django_tasks.backends.database",
     "limpa",
 ]
 
@@ -129,3 +131,13 @@ USE_TZ = True
 
 STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
+
+
+# Tasks
+# https://docs.djangoproject.com/en/6.0/ref/settings/#tasks
+
+TASKS = {
+    "default": {
+        "BACKEND": "django_tasks.backends.database.DatabaseBackend",
+    },
+}

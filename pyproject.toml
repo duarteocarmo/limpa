@@ -11,6 +11,7 @@ dependencies = [
   "whitenoise>=6.11.0",
   "feedparser>=6.0.0",
   "boto3>=1.35.0",
+  "django-tasks>=0.10.0",
 ]
 
 [dependency-groups]
@@ -23,7 +24,7 @@ dev = [
 
 [tool.deptry.per_rule_ignores]
 DEP001 = ["nemo", "torch", "pydub"]
-DEP002 = ["gunicorn", "modal", "whitenoise"]
+DEP002 = ["gunicorn", "modal", "whitenoise", "django-tasks"]
 
 [tool.ruff]
 extend-exclude = ["scripts"]
