@@ -60,11 +60,14 @@
 <div class="podcast-item" id="podcast-{{ podcast.id }}">
     <div class="podcast-header">
         <div class="podcast-title">{{ podcast.title }}</div>
-        <button class="btn-delete"
-                hx-delete="{% url 'delete_podcast' podcast.id %}"
-                hx-target="#podcast-{{ podcast.id }}"
-                hx-swap="outerHTML"
-                hx-confirm="Remove this podcast?">x</button>
+        <div class="podcast-actions">
+            <button class="btn-copy" onclick="navigator.clipboard.writeText('{{ podcast.url }}').then(() => { this.textContent = '✓'; setTimeout(() => this.textContent = 'copy', 1000); })" title="Copy feed URL">copy</button>
+            <button class="btn-delete"
+                    hx-delete="{% url 'delete_podcast' podcast.id %}"
+                    hx-target="#podcast-{{ podcast.id }}"
+                    hx-swap="outerHTML"
+                    hx-confirm="Remove this podcast?">x</button>
+        </div>
     </div>
     <div class="podcast-meta">
         <span class="status status-{{ podcast.status }}">{{ podcast.status }}</span>
