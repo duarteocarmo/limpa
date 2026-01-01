@@ -27,9 +27,17 @@ DEBUG = os.getenv("DEBUG", "True") == "True"
 
 ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "*").split(",")
 
-CSRF_TRUSTED_ORIGINS = os.getenv(
-    "CSRF_TRUSTED_ORIGINS", "https://limpa.duarteocarmo.com"
-).split(",")
+CSRF_TRUSTED_ORIGINS = (
+    os.getenv("CSRF_TRUSTED_ORIGINS", "").split(",")
+    if os.getenv("CSRF_TRUSTED_ORIGINS")
+    else []
+)
+
+LIMPA_BASE_URL = (
+    os.environ["LIMPA_BASE_URL"]
+    if not DEBUG
+    else os.getenv("LIMPA_BASE_URL", "http://localhost:8000")
+)
 
 
 # Application definition

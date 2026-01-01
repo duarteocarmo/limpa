@@ -1,3 +1,16 @@
+x-shared-env: &shared-env
+  DEBUG: "0"
+  ALLOWED_HOSTS: ${ALLOWED_HOSTS}
+  CSRF_TRUSTED_ORIGINS: ${CSRF_TRUSTED_ORIGINS}
+  LIMPA_BASE_URL: ${LIMPA_BASE_URL}
+  MODAL_TOKEN_ID: ${MODAL_TOKEN_ID}
+  MODAL_TOKEN_SECRET: ${MODAL_TOKEN_SECRET}
+  AWS_ENDPOINT_URL: ${AWS_ENDPOINT_URL}
+  AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+  AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+  AWS_S3_REGION: ${AWS_S3_REGION:-us-east-1}
+  AWS_S3_BUCKET_NAME: ${AWS_S3_BUCKET_NAME}
+
 services:
   web:
     build: .
@@ -12,15 +25,7 @@ services:
       retries: 10
       start_period: 30s
     environment:
-      - DEBUG=0
-      - ALLOWED_HOSTS=localhost,127.0.0.1,u4084wwksc8og0woo844s80w.136.243.151.98.sslip.io,limpa.duarteocarmo.com
-      - MODAL_TOKEN_ID=${MODAL_TOKEN_ID}
-      - MODAL_TOKEN_SECRET=${MODAL_TOKEN_SECRET}
-      - AWS_ENDPOINT_URL=${AWS_ENDPOINT_URL}
-      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
-      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
-      - AWS_S3_REGION=${AWS_S3_REGION:-us-east-1}
-      - AWS_S3_BUCKET_NAME=${AWS_S3_BUCKET_NAME}
+      <<: *shared-env
 
   worker:
     build: .
@@ -29,14 +34,7 @@ services:
     volumes:
       - sqlite_data:/app/db
     environment:
-      - DEBUG=0
-      - MODAL_TOKEN_ID=${MODAL_TOKEN_ID}
-      - MODAL_TOKEN_SECRET=${MODAL_TOKEN_SECRET}
-      - AWS_ENDPOINT_URL=${AWS_ENDPOINT_URL}
-      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
-      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
-      - AWS_S3_REGION=${AWS_S3_REGION:-us-east-1}
-      - AWS_S3_BUCKET_NAME=${AWS_S3_BUCKET_NAME}
+      <<: *shared-env
     depends_on:
       web:
         condition: service_healthy
