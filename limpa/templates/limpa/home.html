@@ -60,9 +60,6 @@
         <div class="podcast-header">
             <div class="podcast-title">{{ podcast.title }}</div>
             <div class="podcast-actions">
-                <button class="btn-copy"
-                        onclick="navigator.clipboard.writeText('{{ podcast.url }}').then(() => { this.textContent = '✓'; setTimeout(() => this.textContent = 'copy', 1000); })"
-                        title="Copy feed URL">copy</button>
                 <button class="btn-delete"
                         hx-delete="{% url 'delete_podcast' podcast.id %}"
                         hx-target="#podcast-{{ podcast.id }}"
@@ -73,7 +70,16 @@
         <div class="podcast-meta">
             <span class="status status-{{ podcast.status }}">{{ podcast.status }}</span>
             <span class="episode-count">{{ podcast.episode_count }} episode{{ podcast.episode_count|pluralize }}</span>
+            <span class="processed-count">{{ podcast.processed_episodes|length }} processed</span>
             <span class="timestamp">{{ podcast.created_at|date:"M j, Y H:i" }}</span>
+        </div>
+        <div class="podcast-feeds">
+            <button class="btn-copy"
+                    onclick="navigator.clipboard.writeText('{{ podcast.url }}').then(() => { this.textContent = '✓ copied'; setTimeout(() => this.textContent = 'copy feed original', 1000); })"
+                    title="Copy original feed URL">copy feed original</button>
+            <button class="btn-copy"
+                    onclick="navigator.clipboard.writeText('{{ request.scheme }}://{{ request.get_host }}{% url 'serve_feed' podcast.url_hash %}').then(() => { this.textContent = '✓ copied'; setTimeout(() => this.textContent = 'copy feed new', 1000); })"
+                    title="Copy processed feed URL">copy feed new</button>
         </div>
     </div>
 {% endpartialdef %}

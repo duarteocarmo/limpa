@@ -51,3 +51,7 @@ worker: # Run the background task worker
 docker: # Run docker compose with env vars
 	docker compose --env-file .env up --build --force-recreate
 
+.PHONY: refresh
+refresh: # Refresh all podcast feeds
+	uv run python manage.py refresh_feeds
+

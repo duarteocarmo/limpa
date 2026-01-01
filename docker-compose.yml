@@ -39,5 +39,18 @@ services:
       web:
         condition: service_healthy
 
+  cron:
+    build: .
+    entrypoint: ""
+    command: >
+      sh -c "echo '0 4 * * * cd /app && uv run --no-sync python manage.py refresh_feeds >> /proc/1/fd/1 2>&1' | crontab - && cron -f"
+    volumes:
+      - sqlite_data:/app/db
+    environment:
+      <<: *shared-env
+    depends_on:
+      web:
+        condition: service_healthy
+
 volumes:
   sqlite_data:

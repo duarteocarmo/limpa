@@ -3,11 +3,11 @@ import logging
 from django.db import IntegrityError
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, render
-from django.views.decorators.http import require_http_methods, require_POST
+from django.views.decorators.http import require_GET, require_http_methods, require_POST
 
 from limpa.models import Podcast
 from limpa.services.feed import FeedError, fetch_and_validate_feed
-from limpa.services.s3 import upload_feed_xml
+from limpa.services.s3 import get_feed_xml, upload_feed_xml
 from limpa.tasks import process_podcast
 
 logger = logging.getLogger(__name__)
@@ -65,3 +65,12 @@ def delete_podcast(request, podcast_id: int):
     podcast.delete()
     logger.info("Deleted podcast %s", podcast.title)
     return HttpResponse("")
+
+
+@require_GET  # ty: ignore[invalid-argument-type]
+def serve_feed(request, url_hash: str):
+    podcast = get_object_or_404(Podcast, url_hash=url_hash)
+    feed_xml = get_feed_xml(url_hash=podcast.url_hash)
+    if feed_xml is None:
+        return HttpResponse(status=404)
+    return HttpResponse(feed_xml, content_type="application/xml")

@@ -21,6 +21,10 @@ class Podcast(models.Model):
         max_length=20, choices=Status.choices, default=Status.PENDING
     )
     created_at = models.DateTimeField(auto_now_add=True)
+    processed_episodes = models.JSONField(
+        default=dict
+    )  # {guid: {original_url, s3_url}}
+    last_refreshed_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:
         ordering = ["-created_at"]
