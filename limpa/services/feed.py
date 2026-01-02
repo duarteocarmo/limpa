@@ -1,13 +1,31 @@
 import logging
 import re
 from dataclasses import dataclass
-from urllib.request import urlopen
+from urllib.error import HTTPError
+from urllib.request import Request, urlopen
 
 import feedparser
 
 from limpa.services.s3 import upload_feed_xml
 
 logger = logging.getLogger(__name__)
+
+BROWSER_USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+
+
+def fetch_url(url: str, timeout: int = 30) -> bytes:
+    """Fetch URL content, retrying with browser User-Agent on 403 errors."""
+    try:
+        with urlopen(url, timeout=timeout) as response:  # noqa: S310
+            return response.read()
+    except HTTPError as e:
+        if e.code != 403:
+            raise
+        logger.debug(f"Got 403 for {url}, retrying with browser User-Agent")
+
+    req = Request(url, headers={"User-Agent": BROWSER_USER_AGENT})
+    with urlopen(req, timeout=timeout) as response:  # noqa: S310
+        return response.read()
 
 
 class FeedError(Exception):
@@ -29,8 +47,7 @@ class Episode:
 
 def fetch_and_validate_feed(url: str) -> FeedData:
     try:
-        with urlopen(url, timeout=30) as response:  # noqa: S310
-            raw_xml = response.read()
+        raw_xml = fetch_url(url)
     except Exception as e:
         raise FeedError(f"Failed to fetch feed: {e}") from e
 
@@ -51,8 +68,7 @@ def fetch_and_validate_feed(url: str) -> FeedData:
 
 def get_latest_episodes(url: str, count: int = 2) -> list[Episode]:
     """Fetches feed and returns the N most recent episodes by publish date."""
-    with urlopen(url, timeout=30) as response:  # noqa: S310
-        raw_xml = response.read()
+    raw_xml = fetch_url(url)
 
     parsed = feedparser.parse(raw_xml)
 
@@ -91,8 +107,7 @@ def get_latest_episodes(url: str, count: int = 2) -> list[Episode]:
 
 def regenerate_feed(url: str, url_hash: str, processed_episodes: dict) -> None:
     """Fetches original feed, replaces enclosure URLs for processed episodes, uploads to S3."""
-    with urlopen(url, timeout=30) as response:  # noqa: S310
-        raw_xml = response.read()
+    raw_xml = fetch_url(url)
 
     xml_str = raw_xml.decode("utf-8")
 
