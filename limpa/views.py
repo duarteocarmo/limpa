@@ -74,3 +74,9 @@ def serve_feed(request, url_hash: str):
     if feed_xml is None:
         return HttpResponse(status=404)
     return HttpResponse(feed_xml, content_type="application/xml")
+
+
+@require_GET  # ty: ignore[invalid-argument-type]
+def podcast_stats(request, podcast_id: int):
+    podcast = get_object_or_404(Podcast, id=podcast_id)
+    return render(request, "limpa/home.html#podcast_stats", {"podcast": podcast})

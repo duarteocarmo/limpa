@@ -67,13 +67,11 @@
                         hx-confirm="Remove this podcast?">x</button>
             </div>
         </div>
-        <div class="podcast-meta">
-            <span class="status status-{{ podcast.status }}">{{ podcast.status }}</span>
-            <span class="episode-count">{{ podcast.episode_count }} episode{{ podcast.episode_count|pluralize }}</span>
-            <span class="processed-count">{{ podcast.processed_episodes|length }} processed</span>
-            {% if podcast.last_refreshed_at %}
-                <span class="timestamp">Last refreshed: {{ podcast.last_refreshed_at|date:"M j, Y H:i" }}</span>
-            {% endif %}
+        <div class="podcast-meta"
+             hx-get="{% url 'podcast_stats' podcast.id %}"
+             hx-trigger="every 5s"
+             hx-swap="outerHTML">
+            {% partial podcast_stats %}
         </div>
         <div class="podcast-feeds">
             <button class="btn-copy"
@@ -87,4 +85,17 @@
 {% endpartialdef %}
 {% partialdef error_message %}
 <div class="error">{{ message }}</div>
+{% endpartialdef %}
+{% partialdef podcast_stats %}
+<div class="podcast-meta"
+     hx-get="{% url 'podcast_stats' podcast.id %}"
+     hx-trigger="every 5s"
+     hx-swap="outerHTML">
+    <span class="status status-{{ podcast.status }}">{{ podcast.status }}</span>
+    <span class="episode-count">{{ podcast.episode_count }} episode{{ podcast.episode_count|pluralize }}</span>
+    <span class="processed-count">{{ podcast.processed_episodes|length }} processed</span>
+    {% if podcast.last_refreshed_at %}
+        <span class="timestamp">Last refreshed: {{ podcast.last_refreshed_at|date:"M j, Y H:i" }}</span>
+    {% endif %}
+</div>
 {% endpartialdef %}

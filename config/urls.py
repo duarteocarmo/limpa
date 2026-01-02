@@ -27,5 +27,6 @@ urlpatterns = [
         "podcasts/<int:podcast_id>/delete/", views.delete_podcast, name="delete_podcast"
     ),  # ty: ignore[no-matching-overload]  # noqa: E501
     path("feed/<str:url_hash>/", views.serve_feed, name="serve_feed"),  # ty: ignore[no-matching-overload]
+    path("podcasts/<int:podcast_id>/stats/", views.podcast_stats, name="podcast_stats"),  # ty: ignore[no-matching-overload]
     path("admin/", admin.site.urls),
 ]
