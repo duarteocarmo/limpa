@@ -5,7 +5,7 @@ Transcribe audio files using NVIDIA Parakeet on Modal.
 import modal
 
 MODAL_APP_NAME = "transcriber"
-MODAL_GPU = "L40S"
+MODAL_GPU = "A100"
 MODEL_ID = "nvidia/parakeet-tdt-0.6b-v2"
 DEFAULT_BATCH_SIZE = 128
 
