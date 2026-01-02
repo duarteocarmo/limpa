@@ -23,7 +23,7 @@
                       hx-target="#podcast-list"
                       hx-swap="afterbegin"
                       hx-indicator="#add-indicator"
-                      hx-on::after-request="if(event.detail.successful) { this.reset(); } else { alert(event.detail.xhr.responseText.replace(/<[^>]*>/g, '')); }">
+                      hx-on::after-request="if(event.detail.successful) { this.reset(); document.getElementById('empty-state')?.remove(); } else { alert(event.detail.xhr.responseText.replace(/<[^>]*>/g, '')); }">
                     {% csrf_token %}
                     <input type="url"
                            name="url"
@@ -44,7 +44,7 @@
                     {% for podcast in podcasts %}
                         {% partial podcast_item %}
                     {% empty %}
-                        <div class="empty-state">No podcasts added yet. Add one above!</div>
+                        <div id="empty-state" class="empty-state">No podcasts added yet. Add one above!</div>
                     {% endfor %}
                 </div>
             </div>
@@ -67,12 +67,7 @@
                         hx-confirm="Remove this podcast?">x</button>
             </div>
         </div>
-        <div class="podcast-meta"
-             hx-get="{% url 'podcast_stats' podcast.id %}"
-             hx-trigger="every 5s"
-             hx-swap="outerHTML">
-            {% partial podcast_stats %}
-        </div>
+        {% partial podcast_stats %}
         <div class="podcast-feeds">
             <button class="btn-copy"
                     onclick="navigator.clipboard.writeText('{{ podcast.url }}').then(() => { this.textContent = '✓ copied'; setTimeout(() => this.textContent = 'original rss', 1000); })"
