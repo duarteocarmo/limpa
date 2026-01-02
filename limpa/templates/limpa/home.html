@@ -75,7 +75,7 @@
                     title="Copy original feed URL">original rss</button>
             <button class="btn-copy"
                     onclick="navigator.clipboard.writeText('{{ request.scheme }}://{{ request.get_host }}{% url 'serve_feed' podcast.url_hash %}').then(() => { this.textContent = '✓ copied'; setTimeout(() => this.textContent = 'modified rss', 1000); })"
-                    title="Copy processed feed URL">modified rss</button>
+                    title="Copy processed feed URL">ad-free rss</button>
             {% if podcast.last_refreshed_at %}
                 <span class="timestamp">updated {{ podcast.last_refreshed_at|date:"M j, H:i" }}</span>
             {% endif %}

@@ -4,7 +4,7 @@ from django.core.management.base import BaseCommand
 
 from limpa.services.audio import remove_ads_from_audio
 from limpa.services.extract import extract_from_transcription
-from limpa.services.transcribe import transcribe_audio
+from limpa.services.transcribe import transcribe_audio_batch
 
 
 class Command(BaseCommand):
@@ -34,7 +34,8 @@ class Command(BaseCommand):
             output_path = audio_path.with_stem(f"{audio_path.stem}_clean")
 
         self.stdout.write(f"Transcribing {audio_path}...")
-        transcription = transcribe_audio(audio_path)
+        audio_bytes = audio_path.read_bytes()
+        transcription = transcribe_audio_batch([(audio_path.name, audio_bytes)])[0]
 
         self.stdout.write("Transcription:")
         readable = transcription.readable_segments()

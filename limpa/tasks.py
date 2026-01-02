@@ -1,6 +1,7 @@
 import logging
 import os
 import tempfile
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from urllib.request import urlopen
 
@@ -9,11 +10,23 @@ from django.utils import timezone
 
 from limpa.services.audio import remove_ads_from_audio
 from limpa.services.extract import extract_from_transcription
-from limpa.services.feed import get_latest_episodes, regenerate_feed
+from limpa.services.feed import Episode, get_latest_episodes, regenerate_feed
 from limpa.services.s3 import upload_episode_audio, upload_episode_transcript
-from limpa.services.transcribe import transcribe_audio
+from limpa.services.transcribe import transcribe_audio_batch
+from limpa.services.types import TranscriptionResult
 
 logger = logging.getLogger(__name__)
+
+
+def _download_episode(episode: Episode) -> tuple[Path, bytes]:
+    """Download episode audio and return (temp_path, audio_bytes)."""
+    with tempfile.NamedTemporaryFile(suffix=".mp3", delete=False) as f:
+        temp_path = Path(f.name)
+        with urlopen(episode.url, timeout=300) as response:  # noqa: S310
+            while chunk := response.read(8192):
+                f.write(chunk)
+    audio_bytes = temp_path.read_bytes()
+    return temp_path, audio_bytes
 
 
 @task
@@ -30,64 +43,81 @@ def process_podcast(podcast_id: int) -> None:
     episodes = get_latest_episodes(url=podcast.url, count=2)
     processed_guids = set(podcast.processed_episodes.keys())
 
-    for episode in episodes:
-        if episode.guid in processed_guids:
-            logger.info(f"Skipping already processed episode: {episode.guid}")
-            continue
+    new_episodes = [ep for ep in episodes if ep.guid not in processed_guids]
+    if not new_episodes:
+        logger.info("No new episodes to process")
+        podcast.status = Podcast.Status.READY
+        podcast.save(update_fields=["status"])
+        return
 
-        process_episode.enqueue(  # type: ignore[attr-defined]
-            podcast_id=podcast_id, episode_guid=episode.guid, episode_url=episode.url
-        )
+    logger.info(f"Found {len(new_episodes)} new episodes to process")
 
-
-@task
-def process_episode(podcast_id: int, episode_guid: str, episode_url: str) -> None:
-    from limpa.models import Podcast
-
-    podcast = Podcast.objects.get(id=podcast_id)
-    logger.info(f"Processing episode {episode_guid} for podcast {podcast.title}")
-
-    temp_input = None
-    temp_output = None
-
+    temp_files: list[Path] = []
     try:
-        with tempfile.NamedTemporaryFile(suffix=".mp3", delete=False) as f:
-            temp_input = Path(f.name)
-            with urlopen(episode_url, timeout=300) as response:  # noqa: S310
-                while chunk := response.read(8192):
-                    f.write(chunk)
+        downloaded = []
+        for episode in new_episodes:
+            temp_path, audio_bytes = _download_episode(episode)
+            temp_files.append(temp_path)
+            downloaded.append((episode, temp_path, audio_bytes))
+            logger.info(f"Downloaded episode {episode.guid}")
 
-        logger.info(f"Downloaded episode to {temp_input}")
+        audio_items = [
+            (f"{ep.guid}.mp3", audio_bytes) for ep, _, audio_bytes in downloaded
+        ]
+        transcriptions = transcribe_audio_batch(audio_items=audio_items)
+        logger.info(f"Transcribed {len(transcriptions)} episodes in parallel")
 
-        transcription = transcribe_audio(audio_path=temp_input)
-        logger.info(f"Transcribed episode: {len(transcription.segments)} segments")
+        def _upload_transcript(
+            episode: Episode, transcription: TranscriptionResult
+        ) -> str:
+            url = upload_episode_transcript(
+                url_hash=podcast.url_hash,
+                episode_guid=episode.guid,
+                transcript_json=transcription.model_dump_json(),
+            )
+            logger.info(f"Uploaded transcript for {episode.guid}")
+            return url
 
-        transcript_url = upload_episode_transcript(
-            url_hash=podcast.url_hash,
-            episode_guid=episode_guid,
-            transcript_json=transcription.model_dump_json(),
-        )
-        logger.info(f"Uploaded transcript to {transcript_url}")
+        with ThreadPoolExecutor() as executor:
+            transcript_futures = [
+                executor.submit(_upload_transcript, ep, tr)
+                for (ep, _, _), tr in zip(downloaded, transcriptions)
+            ]
+            ad_futures = [
+                executor.submit(extract_from_transcription, transcription=tr)
+                for tr in transcriptions
+            ]
+            transcript_urls = [f.result() for f in transcript_futures]
+            ads_list = [f.result() for f in ad_futures]
 
-        ads = extract_from_transcription(transcription=transcription)
-        logger.info(f"Extracted {len(ads.ads_list)} ads from transcription")
+        for i, ((episode, temp_path, _), transcription) in enumerate(
+            zip(downloaded, transcriptions)
+        ):  # noqa: E501
+            ads = ads_list[i]
+            transcript_url = transcript_urls[i]
+            logger.info(f"Extracted {len(ads.ads_list)} ads from {episode.guid}")
 
-        temp_output = remove_ads_from_audio(input_path=temp_input, ads=ads)
+            temp_output = remove_ads_from_audio(input_path=temp_path, ads=ads)
+            temp_files.append(temp_output)
 
-        s3_url = upload_episode_audio(
-            url_hash=podcast.url_hash, episode_guid=episode_guid, audio_path=temp_output
-        )
-        logger.info(f"Uploaded processed episode to {s3_url}")
+            s3_url = upload_episode_audio(
+                url_hash=podcast.url_hash,
+                episode_guid=episode.guid,
+                audio_path=temp_output,
+            )
+            logger.info(f"Uploaded processed audio for {episode.guid}")
 
-        podcast.processed_episodes[episode_guid] = {
-            "original_url": episode_url,
-            "s3_url": s3_url,
-            "transcript_url": transcript_url,
-            "ads": ads.model_dump(),
-        }
+            podcast.processed_episodes[episode.guid] = {
+                "original_url": episode.url,
+                "s3_url": s3_url,
+                "transcript_url": transcript_url,
+                "ads": ads.model_dump(),
+            }
+
         podcast.status = Podcast.Status.READY
         podcast.last_refreshed_at = timezone.now()
         podcast.save()
+        logger.info(f"Processed {len(new_episodes)} episodes for {podcast.title}")
 
         regenerate_feed(
             url=podcast.url,
@@ -96,13 +126,12 @@ def process_episode(podcast_id: int, episode_guid: str, episode_url: str) -> Non
         )
 
     except Exception as e:
-        logger.error(f"Failed to process episode {episode_guid}: {e}")
+        logger.error(f"Failed to process podcast {podcast.title}: {e}")
         podcast.status = Podcast.Status.FAILED
         podcast.save(update_fields=["status"])
         raise
 
     finally:
-        if temp_input and temp_input.exists():
-            os.unlink(temp_input)
-        if temp_output and temp_output.exists():
-            os.unlink(temp_output)
+        for temp_file in temp_files:
+            if temp_file.exists():
+                os.unlink(temp_file)
