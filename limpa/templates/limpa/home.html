@@ -23,6 +23,7 @@
                       hx-target="#podcast-list"
                       hx-swap="afterbegin"
                       hx-indicator="#add-indicator"
+                      hx-trigger="submit"
                       hx-on::after-request="if(event.detail.successful) { this.reset(); document.getElementById('empty-state')?.remove(); } else { alert(event.detail.xhr.responseText.replace(/<[^>]*>/g, '')); }">
                     {% csrf_token %}
                     <input type="url"
@@ -92,5 +93,6 @@
     <span class="status status-{{ podcast.status }}">{{ podcast.status }}</span>
     <span class="episode-count">{{ podcast.episode_count }} episode{{ podcast.episode_count|pluralize }}</span>
     <span class="processed-count">{{ podcast.processed_episodes|length }} processed</span>
+    <span class="ads-count">{{ podcast.total_ads }} ad{{ podcast.total_ads|pluralize }} removed</span>
 </div>
 {% endpartialdef %}

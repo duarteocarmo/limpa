@@ -33,6 +33,13 @@ class Podcast(models.Model):
     def __str__(self) -> str:
         return str(self.title)
 
+    @property
+    def total_ads(self) -> int:
+        return sum(
+            len(ep.get("ads", {}).get("ads_list", []))
+            for ep in self.processed_episodes.values()
+        )
+
     def save(self, *args, **kwargs):
         if not self.url_hash:
             self.url_hash = hashlib.sha256(str(self.url).encode()).hexdigest()
