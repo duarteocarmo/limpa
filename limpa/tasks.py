@@ -21,6 +21,9 @@ def process_podcast(podcast_id: int) -> None:
     podcast = Podcast.objects.get(id=podcast_id)
     logger.info(f"Processing podcast: {podcast.title} (id={podcast_id})")
 
+    podcast.last_refreshed_at = timezone.now()
+    podcast.save(update_fields=["last_refreshed_at"])
+
     episodes = get_latest_episodes(url=podcast.url, count=5)
     processed_guids = set(podcast.processed_episodes.keys())
 
