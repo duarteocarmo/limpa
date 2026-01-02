@@ -2,34 +2,12 @@
 Transcription service for audio files.
 """
 
-from dataclasses import dataclass
 from pathlib import Path
 
 import modal
 
 from .modal_transcription import Transcriber, app
-
-
-@dataclass
-class Segment:
-    start: float
-    end: float
-    text: str
-
-
-@dataclass
-class TranscriptionResult:
-    text: str
-    segments: list[Segment]
-
-    def readable_segments(self, first_n_words: int = 15) -> str:
-        """Return a list of readable text segments with start time and first N words."""
-        return "\n".join(
-            [
-                f"[{seg.start:.2f} secs] {' '.join(seg.text.split()[:first_n_words])}..."
-                for seg in self.segments
-            ]
-        )
+from .types import Segment, TranscriptionResult
 
 
 def transcribe_audio(audio_path: str | Path) -> TranscriptionResult:
@@ -58,5 +36,9 @@ def transcribe_audio(audio_path: str | Path) -> TranscriptionResult:
 
 
 if __name__ == "__main__":
+    from .extract import extract_from_transcription
+
     tr = transcribe_audio("./scripts/episode.mp3")
     print(tr.readable_segments())
+    ads = extract_from_transcription(tr)
+    breakpoint()
