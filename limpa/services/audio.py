@@ -6,8 +6,8 @@ from pathlib import Path
 logger = logging.getLogger(__name__)
 
 
-def trim_audio_end(input_path: Path, seconds_to_trim: int = 30) -> Path:
-    """Trims the last N seconds from an audio file using ffmpeg. Returns path to trimmed file."""
+def trim_audio_end(input_path: Path, seconds_to_keep: int = 10) -> Path:
+    """Keeps only the last N seconds of an audio file using ffmpeg. Returns path to trimmed file."""
     _, output_file = tempfile.mkstemp(suffix=".mp3")
     output_path = Path(output_file)
 
@@ -27,15 +27,15 @@ def trim_audio_end(input_path: Path, seconds_to_trim: int = 30) -> Path:
         check=True,
     )
     duration = float(duration_result.stdout.strip())
-    new_duration = max(0, duration - seconds_to_trim)
+    start_time = max(0, duration - seconds_to_keep)
 
     subprocess.run(
         [
             "ffmpeg",
             "-i",
             str(input_path),
-            "-t",
-            str(new_duration),
+            "-ss",
+            str(start_time),
             "-c",
             "copy",
             "-y",
@@ -46,6 +46,6 @@ def trim_audio_end(input_path: Path, seconds_to_trim: int = 30) -> Path:
     )
 
     logger.info(
-        f"Trimmed audio from {duration:.1f}s to {new_duration:.1f}s: {output_path}"
+        f"Kept last {seconds_to_keep}s of audio (from {duration:.1f}s): {output_path}"
     )
     return output_path

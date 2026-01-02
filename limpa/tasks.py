@@ -21,7 +21,7 @@ def process_podcast(podcast_id: int) -> None:
     podcast = Podcast.objects.get(id=podcast_id)
     logger.info(f"Processing podcast: {podcast.title} (id={podcast_id})")
 
-    episodes = get_latest_episodes(url=podcast.url, count=2)
+    episodes = get_latest_episodes(url=podcast.url, count=5)
     processed_guids = set(podcast.processed_episodes.keys())
 
     for episode in episodes:
@@ -53,7 +53,7 @@ def process_episode(podcast_id: int, episode_guid: str, episode_url: str) -> Non
 
         logger.info(f"Downloaded episode to {temp_input}")
 
-        temp_output = trim_audio_end(input_path=temp_input, seconds_to_trim=30)
+        temp_output = trim_audio_end(input_path=temp_input, seconds_to_keep=10)
 
         s3_url = upload_episode_audio(
             url_hash=podcast.url_hash, episode_guid=episode_guid, audio_path=temp_output
