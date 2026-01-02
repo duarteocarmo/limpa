@@ -23,10 +23,11 @@ def process_podcast(podcast_id: int) -> None:
     podcast = Podcast.objects.get(id=podcast_id)
     logger.info(f"Processing podcast: {podcast.title} (id={podcast_id})")
 
+    podcast.status = Podcast.Status.PROCESSING
     podcast.last_refreshed_at = timezone.now()
-    podcast.save(update_fields=["last_refreshed_at"])
+    podcast.save(update_fields=["status", "last_refreshed_at"])
 
-    episodes = get_latest_episodes(url=podcast.url, count=3)
+    episodes = get_latest_episodes(url=podcast.url, count=2)
     processed_guids = set(podcast.processed_episodes.keys())
 
     for episode in episodes:
@@ -74,7 +75,9 @@ def process_episode(podcast_id: int, episode_guid: str, episode_url: str) -> Non
         podcast.processed_episodes[episode_guid] = {
             "original_url": episode_url,
             "s3_url": s3_url,
+            "ads": ads.model_dump(),
         }
+        podcast.status = Podcast.Status.READY
         podcast.last_refreshed_at = timezone.now()
         podcast.save()
 
@@ -83,6 +86,12 @@ def process_episode(podcast_id: int, episode_guid: str, episode_url: str) -> Non
             url_hash=podcast.url_hash,
             processed_episodes=podcast.processed_episodes,
         )
+
+    except Exception as e:
+        logger.error(f"Failed to process episode {episode_guid}: {e}")
+        podcast.status = Podcast.Status.FAILED
+        podcast.save(update_fields=["status"])
+        raise
 
     finally:
         if temp_input and temp_input.exists():

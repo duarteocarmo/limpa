@@ -46,8 +46,6 @@ def add_podcast(request):
 
     try:
         upload_feed_xml(url_hash=podcast.url_hash, xml_content=feed_data.raw_xml)
-        podcast.status = Podcast.Status.UPLOADED
-        podcast.save()
         logger.info("Uploaded feed for podcast %s", podcast.title)
     except Exception as e:
         podcast.status = Podcast.Status.FAILED

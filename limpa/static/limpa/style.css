@@ -112,7 +112,8 @@ hr { border: none; border-top: 1px solid light-dark(#e2e8f0, #1e293b); }
     font-size: 10px;
 }
 .status-pending { background: #fef3c7; color: #92400e; }
-.status-uploaded { background: #d1fae5; color: #065f46; }
+.status-processing { background: #dbeafe; color: #1e40af; }
+.status-ready { background: #d1fae5; color: #065f46; }
 .status-failed { background: #fee2e2; color: #991b1b; }
 
 .error {

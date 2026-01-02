@@ -10,7 +10,8 @@ class Podcast(models.Model):
 
     class Status(models.TextChoices):
         PENDING = "pending"
-        UPLOADED = "uploaded"
+        PROCESSING = "processing"
+        READY = "ready"
         FAILED = "failed"
 
     url = models.URLField(unique=True)
