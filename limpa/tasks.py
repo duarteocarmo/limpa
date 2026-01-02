@@ -32,7 +32,7 @@ def process_podcast(podcast_id: int) -> None:
             logger.info(f"Skipping already processed episode: {episode.guid}")
             continue
 
-        process_episode.enqueue(
+        process_episode.enqueue(  # type: ignore[attr-defined]
             podcast_id=podcast_id, episode_guid=episode.guid, episode_url=episode.url
         )
 

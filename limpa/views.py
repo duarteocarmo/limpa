@@ -54,7 +54,7 @@ def add_podcast(request):
         podcast.save()
         logger.error("S3 upload failed for podcast %s: %s", podcast.title, e)
 
-    process_podcast.enqueue(podcast_id=podcast.id)
+    process_podcast.enqueue(podcast_id=podcast.id)  # type: ignore[attr-defined]
 
     return render(request, "limpa/home.html#podcast_item", {"podcast": podcast})
 

@@ -56,7 +56,7 @@ def fetch_and_validate_feed(url: str) -> FeedData:
     if parsed.bozo and not parsed.entries:
         raise FeedError(f"Invalid feed format: {parsed.bozo_exception}")
 
-    title = parsed.feed.get("title", "").strip()
+    title = parsed.feed.get("title", "").strip()  # type: ignore[union-attr]
     if not title:
         raise FeedError("Feed has no title")
 
@@ -85,22 +85,22 @@ def get_latest_episodes(url: str, count: int = 2) -> list[Episode]:
             break
 
         enclosure_url = None
-        for link in entry.get("links", []):
-            if link.get("rel") == "enclosure" or link.get("type", "").startswith(
+        for link in entry.get("links", []):  # type: ignore[union-attr]
+            if link.get("rel") == "enclosure" or link.get("type", "").startswith(  # type: ignore[union-attr]
                 "audio/"
             ):
                 enclosure_url = link.get("href")
                 break
         if not enclosure_url:
-            for enc in entry.get("enclosures", []):
+            for enc in entry.get("enclosures", []):  # type: ignore[union-attr]
                 enclosure_url = enc.get("href")
                 break
 
         if not enclosure_url:
             continue
 
-        guid = entry.get("id") or entry.get("guid") or enclosure_url
-        episodes.append(Episode(guid=guid, url=enclosure_url))
+        guid = entry.get("id") or entry.get("guid") or enclosure_url  # type: ignore[arg-type]
+        episodes.append(Episode(guid=guid, url=enclosure_url))  # type: ignore[arg-type]
 
     return episodes
 
