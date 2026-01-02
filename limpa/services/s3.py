@@ -58,3 +58,23 @@ def upload_episode_audio(url_hash: str, episode_guid: str, audio_path: Path) -> 
         )
 
     return f"{prefix}/{url_hash}/episodes/{guid_hash}.mp3"
+
+
+def upload_episode_transcript(
+    url_hash: str, episode_guid: str, transcript_json: str
+) -> str:
+    bucket = os.environ["AWS_S3_BUCKET_NAME"]
+    guid_hash = hashlib.sha256(episode_guid.encode()).hexdigest()
+    prefix = os.environ["AWS_S3_BUCKET_URL_PREFIX"].rstrip("/")
+
+    key = f"{url_hash}/episodes/{guid_hash}_transcript.json"
+
+    client = get_s3_client()
+    client.put_object(
+        Bucket=bucket,
+        Key=key,
+        Body=transcript_json.encode("utf-8"),
+        ContentType="application/json",
+    )
+
+    return f"{prefix}/{url_hash}/episodes/{guid_hash}_transcript.json"

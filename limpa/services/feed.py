@@ -66,7 +66,7 @@ def fetch_and_validate_feed(url: str) -> FeedData:
     return FeedData(title=title, raw_xml=raw_xml, episode_count=len(parsed.entries))
 
 
-def get_latest_episodes(url: str, count: int = 2) -> list[Episode]:
+def get_latest_episodes(url: str, count: int = 1) -> list[Episode]:
     """Fetches feed and returns the N most recent episodes by publish date."""
     raw_xml = fetch_url(url)
 
@@ -113,9 +113,10 @@ def regenerate_feed(url: str, url_hash: str, processed_episodes: dict) -> None:
 
     for guid, data in processed_episodes.items():
         original_url = data["original_url"]
+        original_url_escaped = original_url.replace("&", "&amp;")
         s3_url = data["s3_url"]
         xml_str = re.sub(
-            rf'(<enclosure[^>]*url=["\']){re.escape(original_url)}(["\'][^>]*>)',
+            rf'(<enclosure[^>]*url=["\']){re.escape(original_url_escaped)}(["\'][^>]*>)',
             rf"\g<1>{s3_url}\g<2>",
             xml_str,
         )

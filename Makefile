@@ -41,6 +41,7 @@ WEBSERVER_PORT := 8000
 run: # Run migrations, start server and worker
 	-lsof -ti:$(WEBSERVER_PORT) | xargs kill -9 2>/dev/null || true
 	uv run python manage.py migrate
+	-uv run python manage.py createsuperuser --noinput 2>/dev/null || true
 	uv run honcho start
 
 .PHONY: worker

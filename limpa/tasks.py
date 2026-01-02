@@ -10,7 +10,7 @@ from django.utils import timezone
 from limpa.services.audio import remove_ads_from_audio
 from limpa.services.extract import extract_from_transcription
 from limpa.services.feed import get_latest_episodes, regenerate_feed
-from limpa.services.s3 import upload_episode_audio
+from limpa.services.s3 import upload_episode_audio, upload_episode_transcript
 from limpa.services.transcribe import transcribe_audio
 
 logger = logging.getLogger(__name__)
@@ -62,6 +62,13 @@ def process_episode(podcast_id: int, episode_guid: str, episode_url: str) -> Non
         transcription = transcribe_audio(audio_path=temp_input)
         logger.info(f"Transcribed episode: {len(transcription.segments)} segments")
 
+        transcript_url = upload_episode_transcript(
+            url_hash=podcast.url_hash,
+            episode_guid=episode_guid,
+            transcript_json=transcription.model_dump_json(),
+        )
+        logger.info(f"Uploaded transcript to {transcript_url}")
+
         ads = extract_from_transcription(transcription=transcription)
         logger.info(f"Extracted {len(ads.ads_list)} ads from transcription")
 
@@ -75,6 +82,7 @@ def process_episode(podcast_id: int, episode_guid: str, episode_url: str) -> Non
         podcast.processed_episodes[episode_guid] = {
             "original_url": episode_url,
             "s3_url": s3_url,
+            "transcript_url": transcript_url,
             "ads": ads.model_dump(),
         }
         podcast.status = Podcast.Status.READY
