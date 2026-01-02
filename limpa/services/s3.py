@@ -53,6 +53,7 @@ def upload_episode_audio(url_hash: str, episode_guid: str, audio_path: Path) -> 
             Key=key,
             Body=f,
             ContentType="audio/mpeg",
+            ACL="public-read",
         )
 
     endpoint_url = os.environ.get("AWS_ENDPOINT_URL", "https://s3.amazonaws.com")
