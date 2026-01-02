@@ -22,6 +22,15 @@ class TranscriptionResult:
     text: str
     segments: list[Segment]
 
+    def readable_segments(self, first_n_words: int = 15) -> str:
+        """Return a list of readable text segments with start time and first N words."""
+        return "\n".join(
+            [
+                f"[{seg.start:.2f} secs] {' '.join(seg.text.split()[:first_n_words])}..."
+                for seg in self.segments
+            ]
+        )
+
 
 def transcribe_audio(audio_path: str | Path) -> TranscriptionResult:
     """Transcribe an audio file (mp3/wav/flac) and return the transcript with segments."""
@@ -49,4 +58,5 @@ def transcribe_audio(audio_path: str | Path) -> TranscriptionResult:
 
 
 if __name__ == "__main__":
-    transcribe_audio("./scripts/episode.mp3")
+    tr = transcribe_audio("./scripts/episode.mp3")
+    print(tr.readable_segments())
