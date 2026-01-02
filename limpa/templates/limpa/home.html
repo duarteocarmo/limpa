@@ -16,7 +16,7 @@
             <div class="container">
                 <header>
                     <a href="/" class="logo">🧼 Limpa</a>
-                    <div class="tagline">Remove ads from your podcast.</div>
+                    <div class="tagline">Remove ads from your podcast feeds.</div>
                 </header>
                 <form class="form-row"
                       hx-post="{% url 'add_podcast' %}"
@@ -71,15 +71,17 @@
             <span class="status status-{{ podcast.status }}">{{ podcast.status }}</span>
             <span class="episode-count">{{ podcast.episode_count }} episode{{ podcast.episode_count|pluralize }}</span>
             <span class="processed-count">{{ podcast.processed_episodes|length }} processed</span>
-            <span class="timestamp">{{ podcast.created_at|date:"M j, Y H:i" }}</span>
+            {% if podcast.last_refreshed_at %}
+                <span class="timestamp">Last refreshed: {{ podcast.last_refreshed_at|date:"M j, Y H:i" }}</span>
+            {% endif %}
         </div>
         <div class="podcast-feeds">
             <button class="btn-copy"
-                    onclick="navigator.clipboard.writeText('{{ podcast.url }}').then(() => { this.textContent = '✓ copied'; setTimeout(() => this.textContent = 'copy feed original', 1000); })"
-                    title="Copy original feed URL">copy feed original</button>
+                    onclick="navigator.clipboard.writeText('{{ podcast.url }}').then(() => { this.textContent = '✓ copied'; setTimeout(() => this.textContent = 'original rss', 1000); })"
+                    title="Copy original feed URL">original rss</button>
             <button class="btn-copy"
-                    onclick="navigator.clipboard.writeText('{{ request.scheme }}://{{ request.get_host }}{% url 'serve_feed' podcast.url_hash %}').then(() => { this.textContent = '✓ copied'; setTimeout(() => this.textContent = 'copy feed new', 1000); })"
-                    title="Copy processed feed URL">copy feed new</button>
+                    onclick="navigator.clipboard.writeText('{{ request.scheme }}://{{ request.get_host }}{% url 'serve_feed' podcast.url_hash %}').then(() => { this.textContent = '✓ copied'; setTimeout(() => this.textContent = 'modified rss', 1000); })"
+                    title="Copy processed feed URL">modified rss</button>
         </div>
     </div>
 {% endpartialdef %}

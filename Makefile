@@ -53,5 +53,5 @@ docker: # Run docker compose with env vars
 
 .PHONY: refresh
 refresh: # Refresh all podcast feeds
-	uv run python manage.py refresh_feeds
+	uv run --no-sync python manage.py refresh_feeds
 
