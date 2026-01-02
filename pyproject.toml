@@ -20,6 +20,7 @@ dependencies = [
 dev = [
   "deptry>=0.24.0",
   "django-stubs[compatible-mypy]>=5.2.8",
+  "honcho>=2.0.0",
   "mypy>=1.19.1",
   "pyright>=1.1.407",
   "ruff>=0.14.10",

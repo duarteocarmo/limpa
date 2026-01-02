@@ -208,3 +208,5 @@ __marimo__/
 scripts/episode.mp3
 scripts/episode_10s.mp3
 .DS_Store
+db/db.sqlite3-shm
+db/db.sqlite3-wal

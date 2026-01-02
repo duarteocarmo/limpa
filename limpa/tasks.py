@@ -7,9 +7,11 @@ from urllib.request import urlopen
 from django.tasks import task  # type: ignore[import-not-found]
 from django.utils import timezone
 
-from limpa.services.audio import trim_audio_end
+from limpa.services.audio import remove_ads_from_audio
+from limpa.services.extract import extract_from_transcription
 from limpa.services.feed import get_latest_episodes, regenerate_feed
 from limpa.services.s3 import upload_episode_audio
+from limpa.services.transcribe import transcribe_audio
 
 logger = logging.getLogger(__name__)
 
@@ -24,7 +26,7 @@ def process_podcast(podcast_id: int) -> None:
     podcast.last_refreshed_at = timezone.now()
     podcast.save(update_fields=["last_refreshed_at"])
 
-    episodes = get_latest_episodes(url=podcast.url, count=5)
+    episodes = get_latest_episodes(url=podcast.url, count=3)
     processed_guids = set(podcast.processed_episodes.keys())
 
     for episode in episodes:
@@ -56,7 +58,13 @@ def process_episode(podcast_id: int, episode_guid: str, episode_url: str) -> Non
 
         logger.info(f"Downloaded episode to {temp_input}")
 
-        temp_output = trim_audio_end(input_path=temp_input, seconds_to_keep=10)
+        transcription = transcribe_audio(audio_path=temp_input)
+        logger.info(f"Transcribed episode: {len(transcription.segments)} segments")
+
+        ads = extract_from_transcription(transcription=transcription)
+        logger.info(f"Extracted {len(ads.ads_list)} ads from transcription")
+
+        temp_output = remove_ads_from_audio(input_path=temp_input, ads=ads)
 
         s3_url = upload_episode_audio(
             url_hash=podcast.url_hash, episode_guid=episode_guid, audio_path=temp_output

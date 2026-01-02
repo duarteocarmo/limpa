@@ -3,13 +3,16 @@ import subprocess
 import tempfile
 from pathlib import Path
 
+from .types import AdvertisementData
+
 logger = logging.getLogger(__name__)
 
 
-def trim_audio_end(input_path: Path, seconds_to_keep: int = 10) -> Path:
-    """Keeps only the last N seconds of an audio file using ffmpeg. Returns path to trimmed file."""
-    _, output_file = tempfile.mkstemp(suffix=".mp3")
-    output_path = Path(output_file)
+def remove_ads_from_audio(input_path: Path, ads: AdvertisementData) -> Path:
+    """Remove advertisement segments from audio using ffmpeg. Returns path to cleaned file."""
+    if not ads.ads_list:
+        logger.info("No ads to remove, returning original file")
+        return input_path
 
     duration_result = subprocess.run(
         [
@@ -21,23 +24,57 @@ def trim_audio_end(input_path: Path, seconds_to_keep: int = 10) -> Path:
             "-of",
             "default=noprint_wrappers=1:nokey=1",
             str(input_path),
-        ],  # noqa: E501
+        ],
         capture_output=True,
         text=True,
         check=True,
     )
-    duration = float(duration_result.stdout.strip())
-    start_time = max(0, duration - seconds_to_keep)
+    total_duration = float(duration_result.stdout.strip())
+
+    ad_segments = sorted(
+        [(ad.start_timestamp_seconds, ad.end_timestamp_seconds) for ad in ads.ads_list],
+        key=lambda x: x[0],
+    )
+
+    # Build list of segments to keep (inverse of ad segments)
+    keep_segments: list[tuple[float, float]] = []
+    current_pos = 0.0
+
+    for ad_start, ad_end in ad_segments:
+        if ad_start > current_pos:
+            keep_segments.append((current_pos, ad_start))
+        current_pos = max(current_pos, ad_end)
+
+    if current_pos < total_duration:
+        keep_segments.append((current_pos, total_duration))
+
+    if not keep_segments:
+        logger.warning("No content left after removing ads")
+        return input_path
+
+    # Build ffmpeg filter complex for concatenating kept segments
+    filter_parts = []
+    for i, (start, end) in enumerate(keep_segments):
+        filter_parts.append(
+            f"[0:a]atrim=start={start}:end={end},asetpts=PTS-STARTPTS[a{i}];"
+        )
+
+    concat_inputs = "".join(f"[a{i}]" for i in range(len(keep_segments)))
+    filter_parts.append(f"{concat_inputs}concat=n={len(keep_segments)}:v=0:a=1[outa]")
+    filter_complex = "".join(filter_parts)
+
+    _, output_file = tempfile.mkstemp(suffix=".mp3")
+    output_path = Path(output_file)
 
     subprocess.run(
         [
             "ffmpeg",
             "-i",
             str(input_path),
-            "-ss",
-            str(start_time),
-            "-c",
-            "copy",
+            "-filter_complex",
+            filter_complex,
+            "-map",
+            "[outa]",
             "-y",
             str(output_path),
         ],
@@ -45,7 +82,8 @@ def trim_audio_end(input_path: Path, seconds_to_keep: int = 10) -> Path:
         check=True,
     )
 
+    total_ad_time = sum(end - start for start, end in ad_segments)
     logger.info(
-        f"Kept last {seconds_to_keep}s of audio (from {duration:.1f}s): {output_path}"
+        f"Removed {len(ads.ads_list)} ads ({total_ad_time:.1f}s) from audio: {output_path}"
     )
     return output_path
