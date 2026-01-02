@@ -15,11 +15,11 @@ class TranscriptionResult(BaseModel):
     text: str
     segments: list[Segment]
 
-    def readable_segments(self, first_n_words: int = 15) -> str:
+    def readable_segments(self) -> str:
         """Return a list of readable text segments with start time and first N words."""
         return "\n".join(
             [
-                f"[{seg.start:.2f} secs] {' '.join(seg.text.split()[:first_n_words])}..."
+                f"[{seg.start:.2f} secs] {' '.join(seg.text.split())}..."
                 for seg in self.segments
             ]
         )

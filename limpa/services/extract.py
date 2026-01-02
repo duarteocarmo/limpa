@@ -54,6 +54,8 @@ Your transcript contains segments with the starting timestamp in seconds and the
 Your goal is to identify and extract all the advertisements mentioned in the podcast.
 You should detect both advertisements that are read by the podcast host and those that are played as audio clips.
 Also detect sponsored sections where the host talks about a sponsor.
+If the host is actively trying to sell or promote a product or service, consider that an advertisement.
+The goal is to detect advertisement sections that could be removed from the podcast without losing important content.
 """.strip()
 
     if error_msg:

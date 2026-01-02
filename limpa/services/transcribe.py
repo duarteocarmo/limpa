@@ -6,6 +6,7 @@ from pathlib import Path
 
 import modal
 
+
 from .modal_transcription import Transcriber, app
 from .types import Segment, TranscriptionResult
 
@@ -33,18 +34,3 @@ def transcribe_audio(audio_path: str | Path) -> TranscriptionResult:
     ]
 
     return TranscriptionResult(text=result["text"], segments=segments)
-
-
-if __name__ == "__main__":
-    from .extract import extract_from_transcription
-
-    # tr = transcribe_audio("./scripts/episode.mp3")
-    # print(tr.readable_segments())
-
-    example = """
-[0.00 secs] Welcome to the podcast...
-[15.00 secs] This episode is brought to you by Acme Corp...
-[30.00 secs] Now, let's dive into today's topic...
-[45.00 secs] Don't forget to check out our sponsor, Beta Inc...
-""".strip()
-    ads = extract_from_transcription(example)

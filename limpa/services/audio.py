@@ -8,7 +8,9 @@ from .types import AdvertisementData
 logger = logging.getLogger(__name__)
 
 
-def remove_ads_from_audio(input_path: Path, ads: AdvertisementData) -> Path:
+def remove_ads_from_audio(
+    input_path: Path, ads: AdvertisementData, output_path: Path | None = None
+) -> Path:
     """Remove advertisement segments from audio using ffmpeg. Returns path to cleaned file."""
     if not ads.ads_list:
         logger.info("No ads to remove, returning original file")
@@ -63,8 +65,9 @@ def remove_ads_from_audio(input_path: Path, ads: AdvertisementData) -> Path:
     filter_parts.append(f"{concat_inputs}concat=n={len(keep_segments)}:v=0:a=1[outa]")
     filter_complex = "".join(filter_parts)
 
-    _, output_file = tempfile.mkstemp(suffix=".mp3")
-    output_path = Path(output_file)
+    if output_path is None:
+        _, output_file = tempfile.mkstemp(suffix=".mp3")
+        output_path = Path(output_file)
 
     subprocess.run(
         [
