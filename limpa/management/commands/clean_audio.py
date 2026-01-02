@@ -37,7 +37,12 @@ class Command(BaseCommand):
         transcription = transcribe_audio(audio_path)
 
         self.stdout.write("Transcription:")
-        self.stdout.write(transcription.readable_segments())
+        readable = transcription.readable_segments()
+        self.stdout.write(readable)
+
+        transcript_path = output_path.with_suffix(".txt")
+        transcript_path.write_text(readable)
+        self.stdout.write(f"Transcript saved to: {transcript_path}")
 
         self.stdout.write("\nExtracting ads from transcription...")
         ads = extract_from_transcription(transcription)

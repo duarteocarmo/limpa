@@ -210,3 +210,6 @@ scripts/episode_10s.mp3
 .DS_Store
 db/db.sqlite3-shm
 db/db.sqlite3-wal
+scripts/rich_roll.mp3
+scripts/rich_roll_clean.mp3
+scripts/rich_roll_clean.txt

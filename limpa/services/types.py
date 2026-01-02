@@ -19,7 +19,7 @@ class TranscriptionResult(BaseModel):
         """Return a list of readable text segments with start time and first N words."""
         return "\n".join(
             [
-                f"[{seg.start:.2f} secs] {' '.join(seg.text.split())}..."
+                f"[{seg.start:.2f} secs] {' '.join(seg.text.split())}"
                 for seg in self.segments
             ]
         )

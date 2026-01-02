@@ -50,12 +50,24 @@ def extract_from_transcription(
     )
     prompt = """
 You will be given a transcript of a podcast episode.
-Your transcript contains segments with the starting timestamp in seconds and the first N words of that segment.
-Your goal is to identify and extract all the advertisements mentioned in the podcast.
-You should detect both advertisements that are read by the podcast host and those that are played as audio clips.
-Also detect sponsored sections where the host talks about a sponsor.
-If the host is actively trying to sell or promote a product or service, consider that an advertisement.
-The goal is to detect advertisement sections that could be removed from the podcast without losing important content.
+
+The transcript is divided into segments, each with:
+- a starting timestamp (in seconds)
+- the first N words spoken from that timestamp onward
+
+Your task is to identify and extract ALL advertisement segments.
+
+Definition of an advertisement:
+- Host-read ads
+- Pre-roll, mid-roll, or post-roll ads
+- Sponsored segments where the host promotes, endorses, or sells a product, service, or brand
+- Any segment whose primary intent is marketing or promotion and could be removed without harming the editorial content
+
+Important rules:
+- Include ad "lead-ins" where the host sets up a purchase recommendation, even if the brand name appears later
+- Treat contiguous promotional speech as a single ad, even if the brand is mentioned partway through
+- If the host is persuading the listener to buy, try, subscribe, or visit a product/service, it is an ad
+- Exclude pure announcements, show intros, or personal reflections unless they directly support a promotion
 """.strip()
 
     if error_msg:
