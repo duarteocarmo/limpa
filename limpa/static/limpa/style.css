@@ -75,6 +75,13 @@ hr { border: none; border-top: 1px solid light-dark(#e2e8f0, #1e293b); }
     margin-top: 8px;
     display: flex;
     gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+.podcast-feeds .timestamp {
+    font-size: 11px;
+    color: #64748b;
+    margin-left: auto;
 }
 
 .btn-delete {

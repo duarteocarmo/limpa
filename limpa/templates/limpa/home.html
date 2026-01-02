@@ -75,6 +75,9 @@
             <button class="btn-copy"
                     onclick="navigator.clipboard.writeText('{{ request.scheme }}://{{ request.get_host }}{% url 'serve_feed' podcast.url_hash %}').then(() => { this.textContent = '✓ copied'; setTimeout(() => this.textContent = 'modified rss', 1000); })"
                     title="Copy processed feed URL">modified rss</button>
+            {% if podcast.last_refreshed_at %}
+                <span class="timestamp">{{ podcast.last_refreshed_at|date:"M j, H:i" }}</span>
+            {% endif %}
         </div>
     </div>
 {% endpartialdef %}
@@ -89,8 +92,5 @@
     <span class="status status-{{ podcast.status }}">{{ podcast.status }}</span>
     <span class="episode-count">{{ podcast.episode_count }} episode{{ podcast.episode_count|pluralize }}</span>
     <span class="processed-count">{{ podcast.processed_episodes|length }} processed</span>
-    {% if podcast.last_refreshed_at %}
-        <span class="timestamp">Last refreshed: {{ podcast.last_refreshed_at|date:"M j, Y H:i" }}</span>
-    {% endif %}
 </div>
 {% endpartialdef %}
