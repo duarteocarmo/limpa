@@ -4,7 +4,7 @@ import modal
 
 MODAL_APP_NAME = "transcriber"
 MODAL_GPU = "A100"
-MODEL_ID = "nvidia/parakeet-tdt-0.6b-v2"
+MODEL_ID = "nvidia/parakeet-tdt-0.6b-v3"
 DEFAULT_BATCH_SIZE = 128
 
 model_volume = modal.Volume.from_name("transcription-models", create_if_missing=True)
