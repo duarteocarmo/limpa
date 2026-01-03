@@ -1,5 +1,6 @@
 import logging
 import re
+import xml.etree.ElementTree as ET
 from dataclasses import dataclass
 from urllib.error import HTTPError
 from urllib.request import Request, urlopen
@@ -106,20 +107,74 @@ def get_latest_episodes(url: str, count: int = 1) -> list[Episode]:
 
 
 def regenerate_feed(url: str, url_hash: str, processed_episodes: dict) -> None:
-    """Fetches original feed, replaces enclosure URLs for processed episodes, uploads to S3."""
+    """Fetches original feed, replaces enclosure URLs and adds [No ads] to titles for processed episodes, uploads to S3."""
     raw_xml = fetch_url(url)
 
-    xml_str = raw_xml.decode("utf-8")
+    # Parse the XML
+    try:
+        # Register common podcast namespaces to preserve them
+        ET.register_namespace('', 'http://www.w3.org/2005/Atom')
+        ET.register_namespace('itunes', 'http://www.itunes.com/dtds/podcast-1.0.dtd')
+        ET.register_namespace('content', 'http://purl.org/rss/1.0/modules/content/')
 
-    for guid, data in processed_episodes.items():
-        original_url = data["original_url"]
-        original_url_escaped = original_url.replace("&", "&amp;")
-        s3_url = data["s3_url"]
-        xml_str = re.sub(
-            rf'(<enclosure[^>]*url=["\']){re.escape(original_url_escaped)}(["\'][^>]*>)',
-            rf"\g<1>{s3_url}\g<2>",
-            xml_str,
-        )
+        root = ET.fromstring(raw_xml)
+
+        # Update podcast title in the feed if it doesn't have [No ads]
+        channel = root.find(".//channel")
+        if channel is not None:
+            channel_title = channel.find("title")
+            if channel_title is not None and channel_title.text:
+                if not channel_title.text.startswith("[No ads]"):
+                    channel_title.text = f"[No ads] {channel_title.text}"
+
+        # Build a mapping of original_url -> (s3_url, guid) for quick lookup
+        url_to_data = {
+            data["original_url"]: {"s3_url": data["s3_url"], "guid": guid}
+            for guid, data in processed_episodes.items()
+        }
+
+        # Find all item elements (episodes)
+        # RSS feeds can have different structures, check for both common patterns
+        items = root.findall(".//item") or root.findall(".//{http://www.w3.org/2005/Atom}item")
+
+        for item in items:
+            # Find enclosure element
+            enclosure = item.find("enclosure")
+            if enclosure is None:
+                continue
+
+            enclosure_url = enclosure.get("url")
+            if not enclosure_url:
+                continue
+
+            # Check if this episode has been processed
+            if enclosure_url in url_to_data:
+                # Update the enclosure URL to point to S3
+                enclosure.set("url", url_to_data[enclosure_url]["s3_url"])
+
+                # Update the episode title to add [No ads]
+                title_elem = item.find("title")
+                if title_elem is not None and title_elem.text:
+                    if not title_elem.text.startswith("[No ads]"):
+                        title_elem.text = f"[No ads] {title_elem.text}"
+
+        # Serialize back to string
+        xml_str = ET.tostring(root, encoding="utf-8", method="xml").decode("utf-8")
+
+    except ET.ParseError:
+        # Fallback to regex-based replacement if XML parsing fails
+        logger.warning("Failed to parse XML, falling back to regex replacement")
+        xml_str = raw_xml.decode("utf-8")
+
+        for guid, data in processed_episodes.items():
+            original_url = data["original_url"]
+            original_url_escaped = original_url.replace("&", "&amp;")
+            s3_url = data["s3_url"]
+            xml_str = re.sub(
+                rf'(<enclosure[^>]*url=["\']){re.escape(original_url_escaped)}(["\'][^>]*>)',
+                rf"\g<1>{s3_url}\g<2>",
+                xml_str,
+            )
 
     upload_feed_xml(url_hash=url_hash, xml_content=xml_str.encode("utf-8"))
     logger.info(
