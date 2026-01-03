@@ -114,6 +114,12 @@ def regenerate_feed(
             xml_str,
             flags=re.DOTALL,
         )
+        xml_str = re.sub(
+            rf"(<item>.*?<itunes:title>){re.escape(original_title)}(</itunes:title>.*?</item>)",
+            rf"\g<1>{original_title} [AD-FREE]\g<2>",
+            xml_str,
+            flags=re.DOTALL,
+        )
 
     xml_str = re.sub(
         r"(<title>)(.*?)(</title>)", rf"\1{podcast_title} [AD-FREE]\3", xml_str, count=1
