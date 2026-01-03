@@ -40,7 +40,7 @@ def process_podcast(podcast_id: int) -> None:
     podcast.last_refreshed_at = timezone.now()
     podcast.save(update_fields=["status", "last_refreshed_at"])
 
-    episodes = get_latest_episodes(url=podcast.url, count=1)
+    episodes: list[Episode] = get_latest_episodes(url=podcast.url, count=1)
     processed_guids = set(podcast.processed_episodes.keys())
 
     new_episodes = [ep for ep in episodes if ep.guid not in processed_guids]
@@ -54,7 +54,7 @@ def process_podcast(podcast_id: int) -> None:
 
     temp_files: list[Path] = []
     try:
-        downloaded = []
+        downloaded: list[tuple[Episode, Path, bytes]] = []
         for episode in new_episodes:
             temp_path, audio_bytes = _download_episode(episode)
             temp_files.append(temp_path)
@@ -109,7 +109,7 @@ def process_podcast(podcast_id: int) -> None:
 
             podcast.processed_episodes[episode.guid] = {
                 "original_url": episode.url,
-                "episode_title": episode.title,
+                "title": episode.title,
                 "s3_url": s3_url,
                 "transcript_url": transcript_url,
                 "ads": ads.model_dump(),

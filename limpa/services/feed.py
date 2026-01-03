@@ -43,6 +43,7 @@ class FeedData:
 class Episode:
     guid: str
     url: str
+    title: str
 
 
 def fetch_and_validate_feed(url: str) -> FeedData:
@@ -99,8 +100,13 @@ def get_latest_episodes(url: str, count: int) -> list[Episode]:
         if not enclosure_url:
             continue
 
-        guid = entry.get("id") or entry.get("guid") or enclosure_url  # type: ignore[arg-type]
-        episodes.append(Episode(guid=guid, url=enclosure_url))  # type: ignore[arg-type]
+        if not isinstance(enclosure_url, str):
+            raise FeedError("Enclosure URL is not a string")
+
+        title: str = entry.get("title", "Untitled Episode")  # type: ignore[union-attr]
+        guid: str = entry.get("id") or entry.get("guid") or enclosure_url  # type: ignore[arg-type]
+
+        episodes.append(Episode(guid=guid, url=enclosure_url, title=title))
 
     return episodes
 
