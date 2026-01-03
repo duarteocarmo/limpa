@@ -66,7 +66,7 @@ def fetch_and_validate_feed(url: str) -> FeedData:
     return FeedData(title=title, raw_xml=raw_xml, episode_count=len(parsed.entries))
 
 
-def get_latest_episodes(url: str, count: int = 1) -> list[Episode]:
+def get_latest_episodes(url: str, count: int) -> list[Episode]:
     """Fetches feed and returns the N most recent episodes by publish date."""
     raw_xml = fetch_url(url)
 
@@ -105,21 +105,34 @@ def get_latest_episodes(url: str, count: int = 1) -> list[Episode]:
     return episodes
 
 
-def regenerate_feed(url: str, url_hash: str, processed_episodes: dict) -> None:
+def regenerate_feed(
+    url: str, url_hash: str, processed_episodes: dict, podcast_title: str
+) -> None:
     """Fetches original feed, replaces enclosure URLs for processed episodes, uploads to S3."""
     raw_xml = fetch_url(url)
 
     xml_str = raw_xml.decode("utf-8")
 
-    for guid, data in processed_episodes.items():
+    for _, data in processed_episodes.items():
         original_url = data["original_url"]
         original_url_escaped = original_url.replace("&", "&amp;")
+        original_title = data["title"]
         s3_url = data["s3_url"]
         xml_str = re.sub(
             rf'(<enclosure[^>]*url=["\']){re.escape(original_url_escaped)}(["\'][^>]*>)',
             rf"\g<1>{s3_url}\g<2>",
             xml_str,
         )
+        xml_str = re.sub(
+            rf"(<item>.*?<title>){re.escape(original_title)}(</title>.*?</item>)",
+            rf"\g<1>{original_title} [AD-FREE]\g<2>",
+            xml_str,
+            flags=re.DOTALL,
+        )
+
+    xml_str = re.sub(
+        r"(<title>)(.*?)(</title>)", rf"\1{podcast_title} [AD-FREE]\3", xml_str, count=1
+    )
 
     upload_feed_xml(url_hash=url_hash, xml_content=xml_str.encode("utf-8"))
     logger.info(

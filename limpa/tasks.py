@@ -40,7 +40,7 @@ def process_podcast(podcast_id: int) -> None:
     podcast.last_refreshed_at = timezone.now()
     podcast.save(update_fields=["status", "last_refreshed_at"])
 
-    episodes = get_latest_episodes(url=podcast.url, count=2)
+    episodes = get_latest_episodes(url=podcast.url, count=1)
     processed_guids = set(podcast.processed_episodes.keys())
 
     new_episodes = [ep for ep in episodes if ep.guid not in processed_guids]
@@ -109,6 +109,7 @@ def process_podcast(podcast_id: int) -> None:
 
             podcast.processed_episodes[episode.guid] = {
                 "original_url": episode.url,
+                "episode_title": episode.title,
                 "s3_url": s3_url,
                 "transcript_url": transcript_url,
                 "ads": ads.model_dump(),
@@ -123,6 +124,7 @@ def process_podcast(podcast_id: int) -> None:
             url=podcast.url,
             url_hash=podcast.url_hash,
             processed_episodes=podcast.processed_episodes,
+            podcast_title=podcast.title,
         )
 
     except Exception as e:

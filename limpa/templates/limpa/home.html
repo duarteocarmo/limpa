@@ -24,6 +24,7 @@
                       hx-swap="afterbegin"
                       hx-indicator="#add-indicator"
                       hx-trigger="submit"
+                      hx-disabled-elt="find button"
                       hx-on::after-request="if(event.detail.successful) { this.reset(); document.getElementById('empty-state')?.remove(); } else { alert(event.detail.xhr.responseText.replace(/<[^>]*>/g, '')); }">
                     {% csrf_token %}
                     <input type="url"
