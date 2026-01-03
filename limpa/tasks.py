@@ -114,7 +114,6 @@ def process_podcast(podcast_id: int) -> None:
                 "ads": ads.model_dump(),
             }
 
-        # Add [No ads] to podcast title if not already present
         if not podcast.title.startswith("[No ads]"):
             podcast.title = f"[No ads] {podcast.title}"
 

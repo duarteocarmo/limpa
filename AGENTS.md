@@ -1,1 +1,2 @@
 - when doing changes, run make format and make check to confirm all ok
+- only use comments for things that are not easy to understand (explain WHY, not WHAT)
