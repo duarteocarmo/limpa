@@ -108,8 +108,6 @@ def regenerate_feed(
             rf"\g<1>{s3_url}\g<2>",
             xml_str,
         )
-        # Handle both plain titles and CDATA-wrapped titles
-        # Pattern matches: <title>Title</title> or <title><![CDATA[ Title ]]></title>
         xml_str = re.sub(
             rf"(<item>.*?<title>(?:<!\[CDATA\[)?\s*){re.escape(original_title)}(\s*(?:\]\]>)?</title>.*?</item>)",
             rf"\g<1>{original_title} [AD-FREE]\g<2>",
