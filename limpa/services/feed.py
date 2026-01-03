@@ -1,26 +1,13 @@
 import logging
 import re
 from dataclasses import dataclass
-from urllib.request import Request, urlopen
 
 import feedparser
 
+from limpa.services.http import get_with_retry
 from limpa.services.s3 import upload_feed_xml
 
 logger = logging.getLogger(__name__)
-
-USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
-
-
-def fetch_url(url: str, timeout: int = 30) -> bytes:
-    """Fetch URL content, retrying with browser User-Agent on 403 errors."""
-
-    req = Request(url, headers={"User-Agent": USER_AGENT})
-    try:
-        with urlopen(req, timeout=timeout) as response:
-            return response.read()
-    except Exception as e:
-        raise e
 
 
 class FeedError(Exception):
@@ -43,7 +30,7 @@ class Episode:
 
 def fetch_and_validate_feed(url: str) -> FeedData:
     try:
-        raw_xml = fetch_url(url)
+        raw_xml = get_with_retry(url)
     except Exception as e:
         raise FeedError(f"Failed to fetch feed: {e}") from e
 
@@ -63,12 +50,10 @@ def fetch_and_validate_feed(url: str) -> FeedData:
 
 
 def get_latest_episodes(url: str, count: int) -> list[Episode]:
-    """Fetches feed and returns the N most recent episodes by publish date."""
-    raw_xml = fetch_url(url)
+    raw_xml = get_with_retry(url)
 
     parsed = feedparser.parse(raw_xml)
 
-    # Sort entries by published_parsed, most recent first
     sorted_entries = sorted(
         parsed.entries,
         key=lambda e: e.get("published_parsed") or (1970, 1, 1, 0, 0, 0, 0, 0, 0),
@@ -109,8 +94,7 @@ def get_latest_episodes(url: str, count: int) -> list[Episode]:
 def regenerate_feed(
     url: str, url_hash: str, processed_episodes: dict, podcast_title: str
 ) -> None:
-    """Fetches original feed, replaces enclosure URLs for processed episodes, uploads to S3."""
-    raw_xml = fetch_url(url)
+    raw_xml = get_with_retry(url)
 
     xml_str = raw_xml.decode("utf-8")
 

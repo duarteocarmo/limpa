@@ -11,7 +11,6 @@ logger = logging.getLogger(__name__)
 def remove_ads_from_audio(
     input_path: Path, ads: AdvertisementData, output_path: Path | None = None
 ) -> Path:
-    """Remove advertisement segments from audio using ffmpeg. Returns path to cleaned file."""
     if not ads.ads_list:
         logger.info("No ads to remove, returning original file")
         return input_path
@@ -38,7 +37,6 @@ def remove_ads_from_audio(
         key=lambda x: x[0],
     )
 
-    # Build list of segments to keep (inverse of ad segments)
     keep_segments: list[tuple[float, float]] = []
     current_pos = 0.0
 
@@ -54,7 +52,6 @@ def remove_ads_from_audio(
         logger.warning("No content left after removing ads")
         return input_path
 
-    # Build ffmpeg filter complex for concatenating kept segments
     filter_parts = []
     for i, (start, end) in enumerate(keep_segments):
         filter_parts.append(

@@ -3,14 +3,15 @@ import os
 import tempfile
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
-from urllib.request import urlopen
 
+from django.conf import settings
 from django.tasks import task  # type: ignore[import-not-found]
 from django.utils import timezone
 
 from limpa.services.audio import remove_ads_from_audio
 from limpa.services.extract import extract_from_transcription
 from limpa.services.feed import Episode, get_latest_episodes, regenerate_feed
+from limpa.services.http import get_with_retry
 from limpa.services.s3 import upload_episode_audio, upload_episode_transcript
 from limpa.services.transcribe import transcribe_audio_batch
 from limpa.services.types import TranscriptionResult
@@ -19,13 +20,10 @@ logger = logging.getLogger(__name__)
 
 
 def _download_episode(episode: Episode) -> tuple[Path, bytes]:
-    """Download episode audio and return (temp_path, audio_bytes)."""
+    audio_bytes = get_with_retry(url=episode.url)
     with tempfile.NamedTemporaryFile(suffix=".mp3", delete=False) as f:
+        f.write(audio_bytes)
         temp_path = Path(f.name)
-        with urlopen(episode.url, timeout=300) as response:  # noqa: S310
-            while chunk := response.read(8192):
-                f.write(chunk)
-    audio_bytes = temp_path.read_bytes()
     return temp_path, audio_bytes
 
 
@@ -40,7 +38,9 @@ def process_podcast(podcast_id: int) -> None:
     podcast.last_refreshed_at = timezone.now()
     podcast.save(update_fields=["status", "last_refreshed_at"])
 
-    episodes: list[Episode] = get_latest_episodes(url=podcast.url, count=1)
+    episodes: list[Episode] = get_latest_episodes(
+        url=podcast.url, count=settings.PODCAST_EPISODES_TO_PROCESS
+    )
     processed_guids = set(podcast.processed_episodes.keys())
 
     new_episodes = [ep for ep in episodes if ep.guid not in processed_guids]

@@ -1,7 +1,3 @@
-"""
-Extraction service for structured data from transcriptions.
-"""
-
 import logging
 import os
 import time
@@ -43,7 +39,6 @@ def extract_from_transcription(
     transcription: TranscriptionResult | str,
     error_msg: str | None = None,
 ) -> AdvertisementData:
-    """Extract structured data from a transcription result using a Pydantic model."""
     client = OpenAI(
         base_url="https://openrouter.ai/api/v1",
         api_key=os.environ["OPENROUTER_API_KEY"],

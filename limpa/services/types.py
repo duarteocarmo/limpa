@@ -1,7 +1,3 @@
-"""
-Common types for limpa services.
-"""
-
 from pydantic import BaseModel
 
 
@@ -16,7 +12,6 @@ class TranscriptionResult(BaseModel):
     segments: list[Segment]
 
     def readable_segments(self) -> str:
-        """Return a list of readable text segments with start time and first N words."""
         return "\n".join(
             [
                 f"[{seg.start:.2f} secs] {' '.join(seg.text.split())}"

@@ -1,7 +1,3 @@
-"""
-Transcription service for audio files.
-"""
-
 import modal
 
 from .modal_transcription import Transcriber, app
@@ -11,7 +7,6 @@ from .types import Segment, TranscriptionResult
 def transcribe_audio_batch(
     audio_items: list[tuple[str, bytes]],
 ) -> list[TranscriptionResult]:
-    """Transcribe multiple audio files in parallel using Modal map."""
     if not audio_items:
         return []
 
