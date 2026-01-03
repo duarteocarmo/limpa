@@ -10,15 +10,14 @@ def transcribe_audio_batch(
     if not audio_items:
         return []
 
-    with modal.enable_output():
-        with app.run():
-            transcriber = Transcriber()
-            results = list(
-                transcriber.transcribe.map(
-                    [audio_bytes for _, audio_bytes in audio_items],
-                    [filename for filename, _ in audio_items],
-                )
+    with modal.enable_output(), app.run():
+        transcriber = Transcriber()
+        results = list(
+            transcriber.transcribe.map(
+                [audio_bytes for _, audio_bytes in audio_items],
+                [filename for filename, _ in audio_items],
             )
+        )
 
     return [
         TranscriptionResult(

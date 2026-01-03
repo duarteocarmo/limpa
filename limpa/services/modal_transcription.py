@@ -1,6 +1,4 @@
-"""
-Transcribe audio files using NVIDIA Parakeet on Modal.
-"""
+"""Transcribe audio files using NVIDIA Parakeet on Modal."""
 
 import modal
 
