@@ -109,7 +109,13 @@ def regenerate_feed(
             xml_str,
         )
         xml_str = re.sub(
-            rf"(<item>.*?<title>){re.escape(original_title)}(</title>.*?</item>)",
+            rf"(<item>.*?<title>(?:<!\[CDATA\[)?\s*){re.escape(original_title)}(\s*(?:\]\]>)?</title>.*?</item>)",
+            rf"\g<1>{original_title} [AD-FREE]\g<2>",
+            xml_str,
+            flags=re.DOTALL,
+        )
+        xml_str = re.sub(
+            rf"(<item>.*?<itunes:title>(?:<!\[CDATA\[)?\s*){re.escape(original_title)}(\s*(?:\]\]>)?</itunes:title>.*?</item>)",
             rf"\g<1>{original_title} [AD-FREE]\g<2>",
             xml_str,
             flags=re.DOTALL,
