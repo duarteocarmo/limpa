@@ -1,8 +1,10 @@
 import hashlib
-from typing import ClassVar
+from typing import TYPE_CHECKING, ClassVar
 
 from django.db import models
-from django.db.models import Manager
+
+if TYPE_CHECKING:
+    from django.db.models import Manager
 
 
 class Podcast(models.Model):

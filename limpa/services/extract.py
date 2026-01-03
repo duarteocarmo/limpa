@@ -25,9 +25,10 @@ def retry_with_error_injection(max_attempts: int = 3):
                     if isinstance(e, ValidationError):
                         error_msg = str(e)
                     logging.info(
-                        f"Attempt {attempt + 1} failed with {type(e).__name__}, retrying..."
+                        f"Attempt {attempt + 1} failed with {type(e).__name__}, retrying..."  # noqa: E501
                     )
                     time.sleep(2**attempt)
+            return None
 
         return wrapper
 
@@ -63,7 +64,7 @@ Important rules:
 - Treat contiguous promotional speech as a single ad, even if the brand is mentioned partway through
 - If the host is persuading the listener to buy, try, subscribe, or visit a product/service, it is an ad
 - Exclude pure announcements, show intros, or personal reflections unless they directly support a promotion
-""".strip()
+"""  # noqa: E501
 
     if error_msg:
         prompt += f"\n\nYou previously failed with the following error: {error_msg}"

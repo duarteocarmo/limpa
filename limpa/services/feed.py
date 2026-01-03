@@ -121,5 +121,5 @@ def regenerate_feed(
 
     upload_feed_xml(url_hash=url_hash, xml_content=xml_str.encode("utf-8"))
     logger.info(
-        f"Regenerated feed for {url_hash} with {len(processed_episodes)} processed episodes"
+        f"Regenerated feed for {url_hash} with {len(processed_episodes)} processed episodes"  # noqa: E501
     )

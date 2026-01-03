@@ -1,8 +1,13 @@
+from __future__ import annotations
+
 import hashlib
 import os
-from pathlib import Path
+from typing import TYPE_CHECKING
 
 import boto3
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 def get_s3_client():
@@ -49,7 +54,7 @@ def upload_episode_audio(url_hash: str, episode_guid: str, audio_path: Path) -> 
     key = f"{url_hash}/episodes/{guid_hash}.mp3"
 
     client = get_s3_client()
-    with open(audio_path, "rb") as f:
+    with audio_path.open("rb") as f:
         client.put_object(
             Bucket=bucket,
             Key=key,

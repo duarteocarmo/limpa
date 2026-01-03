@@ -1,8 +1,8 @@
 import logging
-import os
 import tempfile
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from django.conf import settings
 from django.tasks import task  # type: ignore[import-not-found]
@@ -14,7 +14,9 @@ from limpa.services.feed import Episode, get_latest_episodes, regenerate_feed
 from limpa.services.http import get_with_retry
 from limpa.services.s3 import upload_episode_audio, upload_episode_transcript
 from limpa.services.transcribe import transcribe_audio_batch
-from limpa.services.types import TranscriptionResult
+
+if TYPE_CHECKING:
+    from limpa.services.types import TranscriptionResult
 
 logger = logging.getLogger(__name__)
 
@@ -136,4 +138,4 @@ def process_podcast(podcast_id: int) -> None:
     finally:
         for temp_file in temp_files:
             if temp_file.exists():
-                os.unlink(temp_file)
+                temp_file.unlink()

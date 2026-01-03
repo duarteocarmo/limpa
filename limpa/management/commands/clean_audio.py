@@ -55,7 +55,7 @@ class Command(BaseCommand):
         self.stdout.write(f"Found {len(ads.ads_list)} ad(s):")
         for ad in ads.ads_list:
             self.stdout.write(
-                f"  - {ad.short_summary}: {ad.start_timestamp_seconds}s - {ad.end_timestamp_seconds}s"
+                f"  - {ad.short_summary}: {ad.start_timestamp_seconds}s - {ad.end_timestamp_seconds}s"  # noqa: E501
             )
 
         self.stdout.write(f"\nRemoving ads and saving to {output_path}...")

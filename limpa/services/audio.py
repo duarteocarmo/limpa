@@ -2,8 +2,10 @@ import logging
 import subprocess
 import tempfile
 from pathlib import Path
+from typing import TYPE_CHECKING
 
-from .types import AdvertisementData
+if TYPE_CHECKING:
+    from .types import AdvertisementData
 
 logger = logging.getLogger(__name__)
 
@@ -84,6 +86,6 @@ def remove_ads_from_audio(
 
     total_ad_time = sum(end - start for start, end in ad_segments)
     logger.info(
-        f"Removed {len(ads.ads_list)} ads ({total_ad_time:.1f}s) from audio: {output_path}"
+        f"Removed {len(ads.ads_list)} ads ({total_ad_time:.1f}s) from audio: {output_path}"  # noqa: E501
     )
     return output_path
